@@ -1,9 +1,11 @@
 import jobspy
 import sqlite3
+import datetime
+import streamlit as st
 from langdetect import detect
 from googletrans import Translator
 
-
+#@st.cache_data(ttl=datetime.timedelta(days=1))
 def extract(search_term, country):
     """
     Get jobspy scropper DataFrame
@@ -21,8 +23,8 @@ def extract(search_term, country):
         country_indeed=country
     )
 
-
-def transform(jobs, country):
+@st.cache_data(ttl=datetime.timedelta(days=1))
+def transform(jobs, search_term, country):
     """
     Clean the data (analysed in Jupyter notebook analyse_jobspy.ipynb) by selecting wanted columns, removing duplicate
     entries from different sites (keeping indeed), separate city and country in two columns, convert markdown to plain
@@ -78,6 +80,7 @@ def transform(jobs, country):
         try:
             return translator.translate(text, dest='en').text
         except:
+            print("Translate exception entered!")
             return None
 
     jobs_red.loc[index_nonen, 'description'] = jobs_red.loc[index_nonen, 'description'].apply(
@@ -88,6 +91,9 @@ def transform(jobs, country):
     jobs_red.dropna(subset='description', inplace=True)
     # Turn description to lower-case
     jobs_red['description'] = jobs_red['description'].str.lower()
+
+    # Add search term column
+    jobs_red['search_term'] = search_term
 
     return jobs_red
 
@@ -105,7 +111,8 @@ def load(jobs_df):
             description TEXT,
             city TEXT,
             country TEXT,
-            description_language TEXT
+            description_language TEXT,
+            search_term TEXT
         )
     """)
     conn.commit()
@@ -113,7 +120,7 @@ def load(jobs_df):
     # Check already existing ids in database, and remove them from query if they exist
     ids = cursor.execute("SELECT id FROM jobspy").fetchall()
     already_db = [id_[0] for id_ in ids]
-    remove_idx = jobs_df.loc[jobs_df['id'] == already_db].index
+    remove_idx = jobs_df.loc[jobs_df['id'].isin(already_db)].index
     jobs_df.drop(remove_idx, axis=0, inplace=True)
     jobs_df.to_sql(
         "jobspy",

@@ -26,7 +26,7 @@ def run_etl(search_term, countries):
 
 @st.cache_resource
 def connect2db(db_name):
-    return sqlite3.connect(db_name)
+    return sqlite3.connect(db_name, check_same_thread=False)
 
 def generate_card(col):
     wch_colour_box = (0, 204, 102)
@@ -89,7 +89,7 @@ def url_ad(cursor, country):
 if __name__ == "__main__":
 
     db_name = "jobs.db"
-    conn = connect2db(db_name, check_same_thread=False)
+    conn = connect2db(db_name)
     cursor = conn.cursor()
 
     st.title(" Job market insights")

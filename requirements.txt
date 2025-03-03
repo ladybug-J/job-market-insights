@@ -9,6 +9,7 @@ asttokens==3.0.0
 async-lru==2.0.4
 attrs==25.1.0
 babel==2.17.0
+backcall==0.2.0
 beautifulsoup4==4.13.3
 bleach==6.2.0
 blinker==1.9.0
@@ -30,6 +31,7 @@ debugpy==1.8.12
 decorator==5.1.1
 defusedxml==0.7.1
 distlib==0.3.9
+docopt==0.6.2
 en_core_web_lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.8.0/en_core_web_lg-3.8.0-py3-none-any.whl#sha256=293e9547a655b25499198ab15a525b05b9407a75f10255e405e8c3854329ab63
 en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl#sha256=1932429db727d4bff3deed6b34cfc05df17794f4a52eeb26cf8928f7c1a0fb85
 et_xmlfile==2.0.0
@@ -48,10 +50,11 @@ h2==3.2.0
 hpack==3.0.0
 hstspreload==2025.1.1
 httpcore==0.9.1
+httpx==0.13.3
 hyperframe==5.2.0
 idna==2.10
 ipykernel==6.29.5
-ipython==8.32.0
+ipython==8.12.3
 ipython-genutils==0.2.0
 ipython-sql==0.5.0
 ipywidgets==8.1.5
@@ -94,6 +97,7 @@ nest-asyncio==1.6.0
 networkx==3.4.2
 notebook==7.3.2
 notebook_shim==0.2.4
+numpy
 openpyxl==3.1.5
 overrides==7.7.0
 packaging==24.2
@@ -101,7 +105,9 @@ pandas
 pandocfilters==1.5.1
 parso==0.8.4
 pexpect==4.9.0
+pickleshare==0.7.5
 pillow==11.1.0
+pipreqs==0.5.0
 platformdirs==4.3.6
 playwright==1.50.0
 plotly==6.0.0
@@ -175,3 +181,4 @@ websocket-client==1.8.0
 widgetsnbextension==4.0.13
 wordcloud==1.9.4
 wrapt==1.17.2
+yarg==0.1.9

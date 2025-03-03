@@ -9,11 +9,11 @@ def jobs_today(conn):
         FROM europe
         JOIN 
             (
-            SELECT city, count(*) as nr_jobs
+            SELECT city, country, count(*) as nr_jobs
             FROM jobspy
             GROUP BY city
             ) AS subquery
-        ON europe.name=subquery.city
+        ON europe.name=subquery.city AND europe.cou_name_en=subquery.country
         """
     job_count = pd.read_sql(query, conn)
     job_count['size'] = 200
@@ -22,13 +22,17 @@ def jobs_today(conn):
         job_count,
         lat="lat",
         lon="lon",
-        size='size',
+        size="size",
         hover_name='city',
         hover_data=['nr_jobs', 'lat', 'lon'],
         zoom=3,
         center={'lat': 53.0, 'lon': 9.0},
         text='city'
     )
-    fig.update_traces(cluster=dict(enabled=True))
+    fig.update_traces(
+        cluster=dict(
+            enabled=True
+        )
+    )
 
     st.plotly_chart(fig)

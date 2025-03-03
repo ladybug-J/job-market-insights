@@ -3,6 +3,7 @@ from .functions import extract, transform, load
 
 
 def main(search_term, country):
+    print(f"Starting scraping jobs with search term '{search_term}' in {country}")
     jobs = extract(search_term=search_term, country=country)
     print(f"Jobspy scraping complete - {jobs.shape[0]} jobs queried")
     jobs_transformed = transform(jobs=jobs, search_term=search_term, country=country)
@@ -19,4 +20,4 @@ if __name__ == "__main__":
     argParser.add_argument("--country", type=str, help="Country of the search")
     args = argParser.parse_args()
 
-    run_etl(args.search_term, args.country)
+    main(args.search_term, args.country)

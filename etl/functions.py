@@ -5,7 +5,7 @@ import streamlit as st
 from langdetect import detect
 from googletrans import Translator
 
-@st.cache_data(ttl=datetime.timedelta(days=1))
+@st.cache_data(ttl=datetime.timedelta(hours=2))
 def extract(search_term, country):
     """
     Get jobspy scropper DataFrame
@@ -45,7 +45,7 @@ def transform(jobs, search_term, country):
         temp_dup = jobs_red.loc[(jobs_red.company == row['company']) & (jobs_red.title == row['title'])]
         # If there are duplicates between sites, remove glassdoor:
         if (('indeed' in temp_dup['site'].unique()) & ('glassdoor' in temp_dup['site'].unique())):
-            remove_index.append(temp_dup.loc[temp_dup['site'] == 'glassdoor'].index.item())
+            remove_index.extend(list(temp_dup.loc[temp_dup['site'] == 'glassdoor'].index))
 
     # Remove duplicates and drop site column
     jobs_red.drop(remove_index, axis=0, inplace=True)

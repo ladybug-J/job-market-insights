@@ -1,13 +1,16 @@
 import sqlite3
 import subprocess
+import requests
+import urllib
 import streamlit as st
 import etl
 from visualization import map_plots
+import streamlit.components.v1 as components
 
 st.set_page_config(
         page_title="Job market insights",
         page_icon="🧊",
-        layout="wide",
+        #layout="centered",
         initial_sidebar_state="expanded"
     )
 
@@ -74,7 +77,14 @@ def generate_diff_metrics(cursor, countries, sts):
 
 #def barplot_cities():
 
-
+def url_ad(cursor, country):
+    query = f"""
+        SELECT job_url
+        FROM jobspy
+        WHERE country='{country}'
+        ORDER BY RANDOM() LIMIT 1
+    """
+    return cursor.execute(query).fetchall()[0][0]
 
 if __name__ == "__main__":
 
@@ -93,7 +103,7 @@ if __name__ == "__main__":
         st.header("Query data", divider="green")
         search_term = st.text_input(
             "Search job term",
-            value="data science"
+            value="data scientist"
         )
         countries = st.multiselect(
             "Select countries for looking for the search term",
@@ -141,16 +151,48 @@ if __name__ == "__main__":
         generate_diff_metrics(cursor, select_countries, select_sts)
 
     # Show plot with ads per city for each country
-
-    map_plots.jobs_today(conn)
+    with st.container():
+        map_plots.jobs_today(conn)
 
     st.markdown("""
         * Map should adapt to the screen size
-        * There are jobs that haven't been counted or shown in map
-            - Some city names from coordinate table don't match with jobspy's
-            - E.g. Munich --> München
+        * Plotly does not allow clustering and showing the aggregated value of a variable (e.g. number of jobs in the 
+        cluster), it just shows the number of locations within the cluster...
         """)
     # Choose random ad and show link view
+    tabs = st.tabs(select_countries)
+    for i, tab in enumerate(tabs):
+        with tab:
+            country = select_countries[i]
+            st.header(f"Random ad for {country}")
+            st.write(url_ad(cursor, country))
+            placeholder = st.empty()
+
+            import playwright
+            from playwright.sync_api import sync_playwright
+
+            url = url_ad(cursor, country)
+            ua = (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/69.0.3497.100 Safari/537.36"
+            )
+
+            with sync_playwright() as p:
+                context = playwright.request.new_context()
+                response = context.get(url)
+                #browser = p.firefox.launch(headless=False)
+                #page = browser.new_page(user_agent=ua)
+                #page.goto(url)
+                #page.wait_for_timeout(1000)
+
+                html = page.content()
+
+            st.write(html)
+            #components.iframe(
+            #    url_ad(cursor, country),
+                #scrolling=True
+            #)
 
 
     #st.page_link("pages/page_1.py", label="Page 1", icon="1️⃣")

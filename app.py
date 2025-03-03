@@ -89,7 +89,7 @@ def url_ad(cursor, country):
 if __name__ == "__main__":
 
     db_name = "jobs.db"
-    conn = connect2db(db_name)
+    conn = connect2db(db_name, check_same_thread=False)
     cursor = conn.cursor()
 
     st.title(" Job market insights")
@@ -168,31 +168,10 @@ if __name__ == "__main__":
             st.write(url_ad(cursor, country))
             placeholder = st.empty()
 
-            import playwright
-            from playwright.sync_api import sync_playwright
-
-            url = url_ad(cursor, country)
-            ua = (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/69.0.3497.100 Safari/537.36"
+            components.iframe(
+                url_ad(cursor, country),
+                scrolling=True
             )
-
-            with sync_playwright() as p:
-                context = playwright.request.new_context()
-                response = context.get(url)
-                #browser = p.firefox.launch(headless=False)
-                #page = browser.new_page(user_agent=ua)
-                #page.goto(url)
-                #page.wait_for_timeout(1000)
-
-                html = page.content()
-
-            st.write(html)
-            #components.iframe(
-            #    url_ad(cursor, country),
-                #scrolling=True
-            #)
 
 
     #st.page_link("pages/page_1.py", label="Page 1", icon="1️⃣")

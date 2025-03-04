@@ -5,7 +5,7 @@ import streamlit as st
 from langdetect import detect
 from googletrans import Translator
 
-@st.cache_data(ttl=datetime.timedelta(hours=2))
+#@st.cache_data(ttl=datetime.timedelta(hours=2))
 def extract(search_term, country):
     """
     Get jobspy scropper DataFrame

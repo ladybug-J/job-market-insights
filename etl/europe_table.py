@@ -20,7 +20,7 @@ distinct_cities = pd.read_sql("SELECT DISTINCT(city), country FROM jobspy;", con
 geo_df['alternate_names'] = geo_df['alternate_names'].fillna(geo_df['name'])
 
 for index, row in distinct_cities.iterrows():
-    if geo_df.loc[(geo_df['name']==row['city']) & (geo_df['cou_name_en']==row['country'])].empty:
+    if geo_df.loc[(geo_df['name'] == row['city']) & (geo_df['cou_name_en'] == row['country'])].empty:
         loc_df = geo_df.loc[(geo_df['alternate_names'].apply(lambda x: row['city'] in x)) & (geo_df['cou_name_en']==row['country'])]
         if (not loc_df.empty) & (len(loc_df.index)==1):
             print(f"Name in jobspy database {row['city']} \n")

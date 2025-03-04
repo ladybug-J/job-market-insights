@@ -93,9 +93,9 @@ if __name__ == "__main__":
     cursor = conn.cursor()
 
     st.title(" Job market insights")
-    st.markdown(" The goal of this dashboard is to get better insights of the job market trends in Europe. \
-                "
-                )
+    st.markdown(" The goal of this dashboard is to get better insights of the job market trends in Europe.")
+    st.markdown("⚠️ App still under construction!")
+
     with st.sidebar:
 
         st.title("Options")
@@ -145,7 +145,7 @@ if __name__ == "__main__":
                  "search term's data, please update database."
         )
 
-    st.header("Number of jobs posted the last 24h - difference with previous day")
+    st.header("Job listings last 24h")
 
     if select_countries or select_sts:
         generate_diff_metrics(cursor, select_countries, select_sts)

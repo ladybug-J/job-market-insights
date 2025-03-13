@@ -4,7 +4,7 @@ import requests
 import urllib
 import streamlit as st
 import etl
-from visualization import map_plots
+from visualization import map_plots, bar_plots
 import streamlit.components.v1 as components
 
 st.set_page_config(
@@ -19,42 +19,16 @@ EU_countries = ["Austria", "Belgium", "Czech Republic", "Denmark", "Finland", "F
                 "Romania", "Spain", "Sweeden", "Switzerland", "Turkey", "Ukraine"
                 ]
 
-def run_etl(search_term, countries):
+def run_etl(conn, search_term, countries):
     for country in countries:
         #subprocess.run(["python3", "./etl/main.py", "--search_term", search_term, "--country", country])
-        etl.main(search_term, country)
+        etl.main(conn, search_term, country)
+        etl.update_europe_table(conn)
 
 @st.cache_resource
 def connect2db(db_name):
     return sqlite3.connect(db_name, check_same_thread=False)
 
-def generate_card(col):
-    wch_colour_box = (0, 204, 102)
-    wch_colour_font = (0, 0, 0)
-    fontsize = 18
-    valign = "left"
-    iconname = "fas fa-asterisk"
-    sline = "Observations"
-    lnk = '<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.12.1/css/all.css" crossorigin="anonymous">'
-    i = 123
-
-    htmlstr = f"""<p style='background-color: rgb({wch_colour_box[0]}, 
-                                                  {wch_colour_box[1]}, 
-                                                  {wch_colour_box[2]}, 0.75); 
-                            color: rgb({wch_colour_font[0]}, 
-                                       {wch_colour_font[1]}, 
-                                       {wch_colour_font[2]}, 0.75); 
-                            font-size: {fontsize}px; 
-                            border-radius: 7px; 
-                            padding-left: 12px; 
-                            padding-top: 18px; 
-                            padding-bottom: 18px; 
-                            line-height:25px;'>
-                            <i class='{iconname} fa-xs'></i> {i}
-                            </style><BR><span style='font-size: 14px; 
-                            margin-top: 0;'>{sline}</style></span></p>"""
-
-    st.markdown(lnk + htmlstr, unsafe_allow_html=True)
 
 def generate_diff_metrics(cursor, countries, sts):
     if countries:
@@ -63,19 +37,26 @@ def generate_diff_metrics(cursor, countries, sts):
             st_placeholders = ','.join('?' * len(sts))
 
             count_1day = cursor.execute(f"""SELECT count(*) FROM jobspy WHERE country='{countries[i]}'
-                AND date_posted >= date('now', '-1 days')
-                AND search_term IN ({st_placeholders});
+                AND date_posted > date('now', '-1 days')
+                AND id IN (
+                    SELECT id 
+                    FROM searchterms
+                    WHERE search_term in ({st_placeholders})
+                    );
                 """, sts).fetchall()[0][0]
 
             count_2day = cursor.execute(f"""SELECT count(*) FROM jobspy WHERE country='{countries[i]}' 
-                AND date_posted >= date('now', '-2 days')
-                AND date_posted < date('now', '-1 days')
-                AND search_term IN ({st_placeholders});
+                AND date_posted > date('now', '-2 days')
+                AND date_posted <= date('now', '-1 days')
+                AND id IN (
+                    SELECT id 
+                    FROM searchterms
+                    WHERE search_term in ({st_placeholders})
+                    );
                 """, sts).fetchall()[0][0]
 
             col.metric(f"{countries[i]}", count_1day, count_1day-count_2day, border=True)
 
-#def barplot_cities():
 
 def url_ad(cursor, country, search_term):
 
@@ -83,26 +64,37 @@ def url_ad(cursor, country, search_term):
         SELECT job_url
         FROM jobspy
         WHERE country='{country}'
-        AND search_term='{search_term}'
+        AND id IN (
+            SELECT id
+            FROM searchterms
+            WHERE search_term='{search_term}'
+        ) 
         ORDER BY RANDOM() LIMIT 1
     """
     return cursor.execute(query).fetchall()[0][0]
 
 if __name__ == "__main__":
 
+    DEBUG = True
     db_name = "jobs.db"
     conn = connect2db(db_name)
     cursor = conn.cursor()
 
     st.title(" Job market insights")
-    st.markdown(" The goal of this dashboard is to get better insights of the job market trends in Europe.")
+    st.markdown(" The goal of this dashboard is to get better insights of the job market trends in Europe. Given the "
+                "search terms and countries you are interested in, you can update the database, and then select "
+                "them in the metrics sidebar for generating visualizations and get automated insights.")
+
     st.markdown("⚠️ App still under construction!")
 
     with st.sidebar:
 
         st.title("Options")
 
-        st.header("Query data", divider="green")
+        st.header("Query data", divider="green", help="The selected search term will be used to scrape indeed and "
+                                                      "glassdoor for a maximum of 400 job postings each. Duplicates "
+                                                      "between job boards will be removed, and the descriptions will "
+                                                      "be translated to English.")
         search_term = st.text_input(
             "Search job term",
             value="data scientist"
@@ -113,11 +105,11 @@ if __name__ == "__main__":
             default=["Austria", "France", "Germany", "Spain", "Switzerland"]
         )
 
-        st.button(
+        update_database = st.button(
             "Update database",
             key="run_etl",
             on_click=run_etl,
-            args=(search_term, countries),
+            args=(conn, search_term, countries),
             disabled=len(countries)==0
 
         )
@@ -126,7 +118,7 @@ if __name__ == "__main__":
 
         try:
             unique_countries = [x[0] for x in cursor.execute("SELECT DISTINCT(country) FROM jobspy").fetchall()]
-            unique_st = [x[0] for x in cursor.execute("SELECT DISTINCT(search_term) FROM jobspy").fetchall()]
+            unique_st = [x[0] for x in cursor.execute("SELECT DISTINCT(search_term) FROM searchterms").fetchall()]
         except: #sqlite3.OperationalError:
             unique_countries = []
             unique_st = []
@@ -147,14 +139,35 @@ if __name__ == "__main__":
                  "search term's data, please update database."
         )
 
-    st.header("Job postings last 24h")
+    with st.container():
+        st.subheader("Job postings today")
+        st.write("This metrics correspond to the sum of ")
+        if select_countries or select_sts:
+            generate_diff_metrics(cursor, select_countries, select_sts)
 
-    if select_countries or select_sts:
-        generate_diff_metrics(cursor, select_countries, select_sts)
+    with st.container():
+        st.subheader("Time-series from DB")
+        st.write("Just the last 3 months will be visualized, as probably postings before are not open positions anymore. "
+                 "The combined labels (e.g. data scientis-AI engineer) corresponds to jobs that are queried with both "
+                 "search terms. ")
+        tabs = st.tabs(select_countries)
+        for i, tab in enumerate(tabs):
+            with tab:
+                bar_plots.timeseries_from_db(conn, select_countries[i], select_sts)
+
+    st.markdown("The data cleaning process can remove several jobs from the queried data:")
+    st.markdown("""
+        * Query is restricted to 400 posts per job board 
+        * Translation to English might fail
+        """)
+
+
 
     # Show plot with ads per city for each country
     with st.container():
-        map_plots.jobs_today(conn)
+        st.subheader("Job locations around Europe")
+        st.write("Beware the cluster numbers refer to the number of locations in the area, not the number of job postings.")
+        map_plots.jobs_in_db(conn, select_countries, select_sts)
 
     st.markdown("""
         * Map should adapt to the screen size
@@ -167,17 +180,19 @@ if __name__ == "__main__":
         unique_st,
         key="random_ad"
     )
-    tabs = st.tabs(select_countries)
-    for i, tab in enumerate(tabs):
-        with tab:
-            country = select_countries[i]
-            st.header(f"Random ad for {country}")
-            st.write(url_ad(cursor, country, search))
-            placeholder = st.empty()
 
-            components.iframe(
-                url_ad(cursor, country, search),
-                scrolling=True
-            )
-                
+    if select_countries:
+        tabs = st.tabs(select_countries)
+        for i, tab in enumerate(tabs):
+            with tab:
+                country = select_countries[i]
+                st.header(f"Random ad for {country}")
+                st.write(url_ad(cursor, country, search))
+                placeholder = st.empty()
+
+                components.iframe(
+                    url_ad(cursor, country, search),
+                    scrolling=True
+                )
+
     #st.page_link("pages/page_1.py", label="Page 1", icon="1️⃣")

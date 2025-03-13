@@ -5,7 +5,7 @@ import streamlit as st
 from langdetect import detect
 from googletrans import Translator
 
-#@st.cache_data(ttl=datetime.timedelta(hours=2))
+@st.cache_data(ttl=datetime.timedelta(days=14))
 def extract(search_term, country):
     """
     Get jobspy scropper DataFrame
@@ -18,8 +18,8 @@ def extract(search_term, country):
         ],
         search_term=search_term,
         location=country,
-        results_wanted=200,
-        hours_old=336, # 2 weeks
+        results_wanted=400,
+        #hours_old=336, # 2 weeks
         country_indeed=country
     )
 
@@ -97,13 +97,13 @@ def transform(jobs, search_term, country):
 
     return jobs_red
 
-def load(jobs_df):
-    conn = sqlite3.connect("jobs.db")
+def load(conn, jobs_df, search_term):
+
     cursor = conn.cursor()
     # Create jobspy table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS jobspy (
-            id TEXT PRIMARY KEY,
+            id TEXT,
             title TEXT,
             company TEXT,
             date_posted TEXT,
@@ -111,10 +111,31 @@ def load(jobs_df):
             description TEXT,
             city TEXT,
             country TEXT,
-            description_language TEXT,
-            search_term TEXT
+            description_language TEXT
         )
     """)
+    conn.commit()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS searchterms (
+            id TEXT,
+            search_term TEXT,
+            FOREIGN KEY (id) REFERENCES jobspy(id),
+            PRIMARY KEY (id, search_term)
+        )
+    """)
+    conn.commit()
+
+    # Check already existing ids in database, and remove them from query if they exist
+    ids = cursor.execute(f"SELECT id FROM searchterms WHERE search_term='{search_term}'").fetchall()
+    already_db = [id_[0] for id_ in ids]
+    remove_idx = jobs_df.loc[jobs_df['id'].isin(already_db)].index
+    jobs_df[['id', 'search_term']].to_sql(
+        "searchterms",
+        conn,
+        if_exists='append',
+        index=False,
+    )
     conn.commit()
 
     # Check already existing ids in database, and remove them from query if they exist
@@ -122,7 +143,7 @@ def load(jobs_df):
     already_db = [id_[0] for id_ in ids]
     remove_idx = jobs_df.loc[jobs_df['id'].isin(already_db)].index
     jobs_df.drop(remove_idx, axis=0, inplace=True)
-    jobs_df.to_sql(
+    jobs_df.drop('search_term', axis=1).to_sql(
         "jobspy",
         conn,
         if_exists='append',

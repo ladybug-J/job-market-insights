@@ -3,18 +3,44 @@ import plotly.express as px
 import streamlit as st
 
 
-def jobs_today(conn):
-    query = """
+def jobs_in_db(conn, countries, sts):
+
+    if len(countries)==0:
+        return
+    elif len(countries)==1:
+        country_filter = f"WHERE country='{countries[0]}'"
+    else:
+        country_filter = f"WHERE country IN {tuple(countries)}"
+
+    if len(sts)==0:
+        return
+    elif len(sts)==1:
+        subquery = f"""SELECT id
+                    FROM searchterms
+                    WHERE search_term='{sts[0]}'
+                    """
+    else:
+        subquery = f"""SELECT id
+                        FROM searchterms
+                        WHERE search_term IN {tuple(sts)}
+                        """
+
+    query = f"""
         SELECT subquery.city, lat, lon, subquery.nr_jobs
         FROM europe
         JOIN 
             (
-            SELECT city, country, count(*) as nr_jobs
+            SELECT id, city, country, count(*) as nr_jobs
             FROM jobspy
-            GROUP BY city
+            WHERE id IN (
+                {subquery}
+                )
+            GROUP BY city 
             ) AS subquery
         ON europe.name=subquery.city AND europe.cou_name_en=subquery.country
+        {country_filter}
         """
+
     job_count = pd.read_sql(query, conn)
     job_count['size'] = 200
 
@@ -26,7 +52,7 @@ def jobs_today(conn):
         hover_name='city',
         hover_data=['nr_jobs', 'lat', 'lon'],
         zoom=3,
-        center={'lat': 53.0, 'lon': 9.0},
+        center={'lat': 46.0, 'lon': 9.0},
         text='city'
     )
     fig.update_traces(

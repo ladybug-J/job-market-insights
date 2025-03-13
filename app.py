@@ -77,11 +77,13 @@ def generate_diff_metrics(cursor, countries, sts):
 
 #def barplot_cities():
 
-def url_ad(cursor, country):
+def url_ad(cursor, country, search_term):
+
     query = f"""
         SELECT job_url
         FROM jobspy
         WHERE country='{country}'
+        AND search_term='{search_term}'
         ORDER BY RANDOM() LIMIT 1
     """
     return cursor.execute(query).fetchall()[0][0]
@@ -145,7 +147,7 @@ if __name__ == "__main__":
                  "search term's data, please update database."
         )
 
-    st.header("Job listings last 24h")
+    st.header("Job postings last 24h")
 
     if select_countries or select_sts:
         generate_diff_metrics(cursor, select_countries, select_sts)
@@ -160,18 +162,22 @@ if __name__ == "__main__":
         cluster), it just shows the number of locations within the cluster...
         """)
     # Choose random ad and show link view
+    search = st.selectbox(
+        "Select search term",
+        unique_st,
+        key="random_ad"
+    )
     tabs = st.tabs(select_countries)
     for i, tab in enumerate(tabs):
         with tab:
             country = select_countries[i]
             st.header(f"Random ad for {country}")
-            st.write(url_ad(cursor, country))
+            st.write(url_ad(cursor, country, search))
             placeholder = st.empty()
 
             components.iframe(
-                url_ad(cursor, country),
+                url_ad(cursor, country, search),
                 scrolling=True
             )
-
-
+                
     #st.page_link("pages/page_1.py", label="Page 1", icon="1️⃣")

@@ -19,7 +19,7 @@ def extract(search_term, country):
         search_term=search_term,
         location=country,
         results_wanted=200,
-        hours_old=72,
+        hours_old=336, # 2 weeks
         country_indeed=country
     )
 

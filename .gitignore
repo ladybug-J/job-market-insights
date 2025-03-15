@@ -175,3 +175,6 @@ cython_debug/
 
 # Ignore Jupyter Notebook checkpoints
 .ipynb_checkpoints/
+
+# Streamlit secrets
+.streamlit/secrets.toml

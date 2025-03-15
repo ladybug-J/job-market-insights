@@ -2,9 +2,9 @@
 from .functions import extract, transform, load
 
 
-def main(conn, search_term, country):
+def main(conn, search_term, country, hours_old):
     print(f"Starting scraping jobs with search term '{search_term}' in {country}")
-    jobs = extract(search_term=search_term, country=country)
+    jobs = extract(search_term=search_term, country=country, hours_old=hours_old)
     print(f"Jobspy scraping complete - {jobs.shape[0]} jobs queried")
     if not jobs.empty:
         jobs_transformed = transform(jobs=jobs, search_term=search_term, country=country)

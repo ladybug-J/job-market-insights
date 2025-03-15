@@ -6,7 +6,7 @@ from langdetect import detect
 from googletrans import Translator
 
 @st.cache_data(ttl=datetime.timedelta(days=14))
-def extract(search_term, country):
+def extract(search_term, country, hours_old):
     """
     Get jobspy scropper DataFrame
     """
@@ -19,7 +19,7 @@ def extract(search_term, country):
         search_term=search_term,
         location=country,
         results_wanted=400,
-        #hours_old=336, # 2 weeks
+        hours_old=hours_old,
         country_indeed=country
     )
 
@@ -130,6 +130,7 @@ def load(conn, jobs_df, search_term):
     ids = cursor.execute(f"SELECT id FROM searchterms WHERE search_term='{search_term}'").fetchall()
     already_db = [id_[0] for id_ in ids]
     remove_idx = jobs_df.loc[jobs_df['id'].isin(already_db)].index
+    jobs_df.drop(remove_idx, axis=0, inplace=True)
     jobs_df[['id', 'search_term']].to_sql(
         "searchterms",
         conn,

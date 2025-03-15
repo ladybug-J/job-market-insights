@@ -4,13 +4,13 @@ import requests
 import urllib
 import streamlit as st
 import etl
-from visualization import map_plots, bar_plots
+from visualization import map_plots, var_plots
 import streamlit.components.v1 as components
 
 st.set_page_config(
         page_title="Job market insights",
         page_icon="🧊",
-        #layout="centered",
+        layout="wide",
         initial_sidebar_state="expanded"
     )
 
@@ -19,10 +19,10 @@ EU_countries = ["Austria", "Belgium", "Czech Republic", "Denmark", "Finland", "F
                 "Romania", "Spain", "Sweeden", "Switzerland", "Turkey", "Ukraine"
                 ]
 
-def run_etl(conn, search_term, countries):
+def run_etl(conn, search_term, countries, hours_old):
     for country in countries:
         #subprocess.run(["python3", "./etl/main.py", "--search_term", search_term, "--country", country])
-        etl.main(conn, search_term, country)
+        etl.main(conn, search_term, country, hours_old)
         etl.update_europe_table(conn)
 
 @st.cache_resource
@@ -73,7 +73,10 @@ def url_ad(cursor, country, search_term):
     """
     return cursor.execute(query).fetchall()[0][0]
 
+
 if __name__ == "__main__":
+
+    import pandas as pd
 
     DEBUG = True
     db_name = "jobs.db"
@@ -81,38 +84,69 @@ if __name__ == "__main__":
     cursor = conn.cursor()
 
     st.title(" Job market insights")
-    st.markdown(" The goal of this dashboard is to get better insights of the job market trends in Europe. Given the "
-                "search terms and countries you are interested in, you can update the database, and then select "
-                "them in the metrics sidebar for generating visualizations and get automated insights.")
-
+    st.markdown("<div style='text-align: justify;'>"
+                "The goal of this dashboard is to get better insights of the job market trends in Europe. Given the "
+                "search terms and countries you are interested in, you can update the database, and after selecting "
+                "them in the metrics sidebar, generate automated visualizations and insights. The data is scraped from "
+                "Indeed and Glassdoor job portals using an open-source Python library: JobSpy."
+                "</div>",
+                unsafe_allow_html=True
+                )
+    st.write("")
+    st.markdown("<div style='text-align: justify;'>"
+                "One of the most important data of the job posts is contained in the job descriptions. To be able to "
+                "extract key information from them (as the specific field for general jobs as 'data scientist', or tools "
+                "and experience the companies require), the current open-source Large Language Models (LLMs) will be "
+                "leveraged."
+                "</div>",
+                unsafe_allow_html=True
+                )
+    st.write("")
     st.markdown("⚠️ App still under construction!")
 
     with st.sidebar:
-
-        st.title("Options")
 
         st.header("Query data", divider="green", help="The selected search term will be used to scrape indeed and "
                                                       "glassdoor for a maximum of 400 job postings each. Duplicates "
                                                       "between job boards will be removed, and the descriptions will "
                                                       "be translated to English.")
-        search_term = st.text_input(
-            "Search job term",
-            value="data scientist"
-        )
-        countries = st.multiselect(
-            "Select countries for looking for the search term",
-            options=EU_countries,
-            default=["Austria", "France", "Germany", "Spain", "Switzerland"]
-        )
+        with st.expander("Options"):
+            search_term = st.text_input(
+                "Search job term",
+                value="data scientist"
+            )
+            countries = st.multiselect(
+                "Select countries for looking for the search term",
+                options=EU_countries,
+                default=["Austria", "France", "Germany", "Spain", "Switzerland"]
+            )
 
-        update_database = st.button(
-            "Update database",
-            key="run_etl",
-            on_click=run_etl,
-            args=(conn, search_term, countries),
-            disabled=len(countries)==0
+            #with st.expander(f"Last data in DB from..."):
+            query = f"""
+                SELECT country AS Country, MAX(date_posted) AS 'Last date' FROM jobspy WHERE id IN (
+                    SELECT id FROM searchterms WHERE search_term='{search_term}'
+                    ) GROUP BY country
+            """
+            st.table(pd.read_sql(query, conn).set_index('Country'))
 
-        )
+            hours_old = st.number_input(
+                label="How many hours old should the job postings be when querying and saving?",
+                placeholder="Insert integer",
+                value=None,
+                step=24,
+                min_value=0,
+                help="If no value is inserted, the entire data available will be queried (with a maximum of 400 posts per "
+                     "job board)"
+            )
+
+            update_database = st.button(
+                "Update database",
+                key="run_etl",
+                on_click=run_etl,
+                args=(conn, search_term, countries, hours_old),
+                disabled=len(countries)==0
+
+            )
 
         st.header("Metrics", divider="green")
 
@@ -145,21 +179,30 @@ if __name__ == "__main__":
         if select_countries or select_sts:
             generate_diff_metrics(cursor, select_countries, select_sts)
 
+    #timeseries, somethingelse = st.columns([0.6, 0.4])
+
     with st.container():
         st.subheader("Time-series from DB")
         st.write("Just the last 3 months will be visualized, as probably postings before are not open positions anymore. "
-                 "The combined labels (e.g. data scientis-AI engineer) corresponds to jobs that are queried with both "
+                 "The combined labels (e.g. data scientis-AI engineer) correspond to jobs that are queried with both "
                  "search terms. ")
         tabs = st.tabs(select_countries)
         for i, tab in enumerate(tabs):
             with tab:
-                bar_plots.timeseries_from_db(conn, select_countries[i], select_sts)
+                var_plots.timeseries_from_db(conn, select_countries[i], select_sts)
 
-    st.markdown("The data cleaning process can remove several jobs from the queried data:")
-    st.markdown("""
-        * Query is restricted to 400 posts per job board 
-        * Translation to English might fail
-        """)
+    st.subheader("Original language of the description text")
+    sts = st.multiselect(
+        "Select search terms",
+        options=unique_st,
+        default=[]
+    )
+    st_cols = st.columns(len(sts))
+    for i, search_term in enumerate(sts):
+        with st_cols[i]:
+            var_plots.description_language(conn, select_countries, search_term)
+
+
 
 
 
@@ -168,31 +211,3 @@ if __name__ == "__main__":
         st.subheader("Job locations around Europe")
         st.write("Beware the cluster numbers refer to the number of locations in the area, not the number of job postings.")
         map_plots.jobs_in_db(conn, select_countries, select_sts)
-
-    st.markdown("""
-        * Map should adapt to the screen size
-        * Plotly does not allow clustering and showing the aggregated value of a variable (e.g. number of jobs in the 
-        cluster), it just shows the number of locations within the cluster...
-        """)
-    # Choose random ad and show link view
-    search = st.selectbox(
-        "Select search term",
-        unique_st,
-        key="random_ad"
-    )
-
-    if select_countries:
-        tabs = st.tabs(select_countries)
-        for i, tab in enumerate(tabs):
-            with tab:
-                country = select_countries[i]
-                st.header(f"Random ad for {country}")
-                st.write(url_ad(cursor, country, search))
-                placeholder = st.empty()
-
-                components.iframe(
-                    url_ad(cursor, country, search),
-                    scrolling=True
-                )
-
-    #st.page_link("pages/page_1.py", label="Page 1", icon="1️⃣")

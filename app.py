@@ -195,7 +195,7 @@ if __name__ == "__main__":
     sts = st.multiselect(
         "Select search terms",
         options=unique_st,
-        default=[]
+        default=select_countries
     )
     st_cols = st.columns(len(sts))
     for i, search_term in enumerate(sts):

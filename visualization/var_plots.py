@@ -9,7 +9,7 @@ def timeseries_from_db(conn, country, sts):
     if len(sts)==0:
         return
     elif len(sts)==1:
-        filter_st = f"r.search_term IN '{sts[0]}'"
+        filter_st = f"r.search_term = '{sts[0]}'"
     else:
         filter_st = f"r.search_term IN {tuple(sts)}"
 

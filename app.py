@@ -126,12 +126,17 @@ if __name__ == "__main__":
             )
 
             #with st.expander(f"Last data in DB from..."):
-            query = f"""
-                SELECT country AS Country, MAX(date_posted) AS 'Last date' FROM jobspy WHERE id IN (
-                    SELECT id FROM searchterms WHERE search_term='{search_term}'
-                    ) GROUP BY country
-            """
-            st.table(pd.read_sql(query, conn).set_index('Country'))
+            try:
+                query = f"""
+                    SELECT country AS Country, MAX(date_posted) AS 'Last date' FROM jobspy WHERE id IN (
+                        SELECT id FROM searchterms WHERE search_term='{search_term}'
+                        ) GROUP BY country
+                """
+                st.table(pd.read_sql(query, conn).set_index('Country'))
+                DB_ON = True
+            except:
+                st.write("No data into the database")
+                DB_ON = False
 
             hours_old = st.number_input(
                 label="How many hours old should the job postings be when querying and saving?",
@@ -177,41 +182,39 @@ if __name__ == "__main__":
                  "search term's data, please update database."
         )
 
-    with st.container():
-        st.subheader("Job postings today")
-        st.write("This metrics correspond to the sum of ")
-        if select_countries or select_sts:
-            generate_diff_metrics(cursor, select_countries, select_sts)
+    if DB_ON:
+        with st.container():
+            st.subheader("Job postings today")
+            st.write("This metrics correspond to the sum of ")
+            if select_countries or select_sts:
+                generate_diff_metrics(cursor, select_countries, select_sts)
 
-    #timeseries, somethingelse = st.columns([0.6, 0.4])
+        #timeseries, somethingelse = st.columns([0.6, 0.4])
 
-    with st.container():
-        st.subheader("Time-series from DB")
-        st.write("Just the last 3 months will be visualized, as probably postings before are not open positions anymore. "
-                 "The combined labels (e.g. data scientis-AI engineer) correspond to jobs that are queried with both "
-                 "search terms. ")
-        tabs = st.tabs(select_countries)
-        for i, tab in enumerate(tabs):
-            with tab:
-                var_plots.timeseries_from_db(conn, select_countries[i], select_sts)
+        with st.container():
+            st.subheader("Time-series from DB")
+            st.write("Just the last 3 months will be visualized, as probably postings before are not open positions anymore. "
+                     "The combined labels (e.g. data scientis-AI engineer) correspond to jobs that are queried with both "
+                     "search terms. ")
+            tabs = st.tabs(select_countries[::-1])
+            for i, tab in enumerate(tabs):
+                with tab:
+                    var_plots.timeseries_from_db(conn, select_countries[::-1][i], select_sts)
 
-    st.subheader("Original language of the description text")
-    sts = st.multiselect(
-        "Select search terms",
-        options=unique_st,
-        default=select_sts
-    )
-    st_cols = st.columns(len(sts))
-    for i, search_term in enumerate(sts):
-        with st_cols[i]:
-            var_plots.description_language(conn, select_countries, search_term)
-
-
-
+        st.subheader("Original language of the description text")
+        sts = st.multiselect(
+            "Select search terms",
+            options=unique_st,
+            default=select_sts
+        )
+        st_cols = st.columns(len(sts))
+        for i, search_term in enumerate(sts):
+            with st_cols[i]:
+                var_plots.description_language(conn, select_countries, search_term)
 
 
-    # Show plot with ads per city for each country
-    with st.container():
-        st.subheader("Job locations around Europe")
-        st.write("Beware the cluster numbers refer to the number of locations in the area, not the number of job postings.")
-        map_plots.jobs_in_db(conn, select_countries, select_sts)
+        # Show plot with ads per city for each country
+        with st.container():
+            st.subheader("Job locations around Europe")
+            st.write("Beware the cluster numbers refer to the number of locations in the area, not the number of job postings.")
+            map_plots.jobs_in_db(conn, select_countries, select_sts)

@@ -3,7 +3,7 @@ import plotly.express as px
 import streamlit as st
 
 
-def jobs_in_db(conn, countries, sts):
+def jobs_in_db(conn, countries, sts, days_old):
 
     if len(countries)==0:
         return
@@ -35,6 +35,7 @@ def jobs_in_db(conn, countries, sts):
             WHERE id IN (
                 {subquery}
                 )
+            AND jobspy.date_posted >= date('now', '-{days_old} days')
             GROUP BY city 
             ) AS subquery
         ON europe.name=subquery.city AND europe.cou_name_en=subquery.country

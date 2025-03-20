@@ -3,9 +3,11 @@ import subprocess
 import requests
 import urllib
 import streamlit as st
+import streamlit.components.v1 as components
+
 import etl
 from visualization import map_plots, var_plots
-import streamlit.components.v1 as components
+from utils.random import generate_diff_metrics
 
 st.set_page_config(
         page_title="Job market insights",
@@ -34,50 +36,6 @@ def connect2db(db_name):
     return sqlite3.connect(db_name, check_same_thread=False)
 
 
-def generate_diff_metrics(cursor, countries, sts):
-    if countries:
-        cols = st.columns(len(countries))
-        for i, col in enumerate(cols):
-            st_placeholders = ','.join('?' * len(sts))
-
-            count_1day = cursor.execute(f"""SELECT count(*) FROM jobspy WHERE country='{countries[i]}'
-                AND date_posted > date('now', '-1 days')
-                AND id IN (
-                    SELECT id 
-                    FROM searchterms
-                    WHERE search_term in ({st_placeholders})
-                    );
-                """, sts).fetchall()[0][0]
-
-            count_2day = cursor.execute(f"""SELECT count(*) FROM jobspy WHERE country='{countries[i]}' 
-                AND date_posted > date('now', '-2 days')
-                AND date_posted <= date('now', '-1 days')
-                AND id IN (
-                    SELECT id 
-                    FROM searchterms
-                    WHERE search_term in ({st_placeholders})
-                    );
-                """, sts).fetchall()[0][0]
-
-            col.metric(f"{countries[i]}", count_1day, count_1day-count_2day, border=True)
-
-
-def url_ad(cursor, country, search_term):
-
-    query = f"""
-        SELECT job_url
-        FROM jobspy
-        WHERE country='{country}'
-        AND id IN (
-            SELECT id
-            FROM searchterms
-            WHERE search_term='{search_term}'
-        ) 
-        ORDER BY RANDOM() LIMIT 1
-    """
-    return cursor.execute(query).fetchall()[0][0]
-
-
 if __name__ == "__main__":
 
     import pandas as pd
@@ -92,7 +50,8 @@ if __name__ == "__main__":
                 "The goal of this dashboard is to get better insights of the job market trends in Europe. Given the "
                 "search terms and countries you are interested in, you can update the database, and after selecting "
                 "them in the metrics sidebar, generate automated visualizations and insights. The data is scraped from "
-                "Indeed and Glassdoor job portals using an open-source Python library: JobSpy."
+                "Indeed and Glassdoor job portals using the open-source Python library JobSpy and saved into an sqlite "
+                "database."
                 "</div>",
                 unsafe_allow_html=True
                 )
@@ -117,7 +76,7 @@ if __name__ == "__main__":
         with st.expander("Options"):
             search_term = st.text_input(
                 "Search job term",
-                value="data scientist"
+                value="Data Scientist"
             )
             countries = st.multiselect(
                 "Select countries for looking for the search term",
@@ -143,7 +102,7 @@ if __name__ == "__main__":
                 placeholder="Insert integer",
                 value=None,
                 step=24,
-                min_value=0,
+                min_value=24,
                 help="If no value is inserted, the entire data available will be queried (with a maximum of 400 posts per "
                      "job board)"
             )
@@ -185,36 +144,42 @@ if __name__ == "__main__":
     if DB_ON:
         with st.container():
             st.subheader("Job postings today")
-            st.write("This metrics correspond to the sum of ")
+            st.write("This metrics correspond to the sum of all job postings from the selected search terms per country today")
             if select_countries or select_sts:
                 generate_diff_metrics(cursor, select_countries, select_sts)
 
-        #timeseries, somethingelse = st.columns([0.6, 0.4])
+
+        st.write("")
+        st.write("")
+        st.write("")
+
+        days_old = st.slider("Input the number of days from job posting", value=30)
+        st.markdown(f"## Trends the last {days_old} days")
 
         with st.container():
             st.subheader("Time-series from DB")
-            st.write("Just the last 3 months will be visualized, as probably postings before are not open positions anymore. "
-                     "The combined labels (e.g. data scientis-AI engineer) correspond to jobs that are queried with both "
+            st.write("The combined labels (e.g. data scientis-AI engineer) correspond to jobs that are queried with both "
                      "search terms. ")
             tabs = st.tabs(select_countries[::-1])
             for i, tab in enumerate(tabs):
                 with tab:
-                    var_plots.timeseries_from_db(conn, select_countries[::-1][i], select_sts)
+                    var_plots.timeseries_from_db(
+                        conn,
+                        select_countries[::-1][i],
+                        select_sts,
+                        days_old
+                    )
 
         st.subheader("Original language of the description text")
-        sts = st.multiselect(
-            "Select search terms",
-            options=unique_st,
-            default=select_sts
-        )
-        st_cols = st.columns(len(sts))
-        for i, search_term in enumerate(sts):
+        st.write("Make colors consistent between search terms!")
+        st_cols = st.columns(len(select_sts))
+        for i, search_term in enumerate(select_sts):
             with st_cols[i]:
-                var_plots.description_language(conn, select_countries, search_term)
+                var_plots.description_language(conn, select_countries, search_term, days_old)
 
 
         # Show plot with ads per city for each country
         with st.container():
             st.subheader("Job locations around Europe")
             st.write("Beware the cluster numbers refer to the number of locations in the area, not the number of job postings.")
-            map_plots.jobs_in_db(conn, select_countries, select_sts)
+            map_plots.jobs_in_db(conn, select_countries, select_sts, days_old)

@@ -99,9 +99,10 @@ def transform(jobs_chunk, search_term, country):
     return jobs_chunk
 
 
-def load(jobs_chunk):
+def load(jobs_chunk, search_term):
     """
     Loads a chunk of transformed jobs into SQLite database.
+    First removes existing IDs from 'searchterms', then from 'jobspy'.
     """
     if jobs_chunk.empty:
         print("No jobs to load.")
@@ -134,22 +135,34 @@ def load(jobs_chunk):
     """)
     conn.commit()
 
-    print(f"Loading {jobs_chunk.shape[0]} jobs into the database...")
+    print(f"Checking for existing jobs in the database for search term '{search_term}'...")
 
-    # Remove duplicates from DB
-    existing_ids = set(id_[0] for id_ in cursor.execute("SELECT id FROM jobspy").fetchall())
-    jobs_chunk = jobs_chunk[~jobs_chunk['id'].isin(existing_ids)]
+    # Remove existing IDs from searchterms table
+    existing_search_ids = set(id_[0] for id_ in cursor.execute(
+        "SELECT id FROM searchterms WHERE search_term=?", (search_term,)
+    ).fetchall())
+
+    jobs_chunk = jobs_chunk[~jobs_chunk['id'].isin(existing_search_ids)]
 
     if not jobs_chunk.empty:
-        jobs_chunk.drop(columns=['search_term']).to_sql("jobspy", conn, if_exists='append', index=False)
         search_df = jobs_chunk[['id']].copy()
-        search_df['search_term'] = jobs_chunk['search_term']
+        search_df['search_term'] = search_term
         search_df['country'] = jobs_chunk['country']
         search_df.to_sql("searchterms", conn, if_exists='append', index=False)
 
     conn.commit()
+
+    # Remove existing IDs from jobspy table
+    existing_jobspy_ids = set(id_[0] for id_ in cursor.execute("SELECT id FROM jobspy").fetchall())
+    jobs_chunk = jobs_chunk[~jobs_chunk['id'].isin(existing_jobspy_ids)]
+
+    if not jobs_chunk.empty:
+        jobs_chunk.drop(columns=['search_term']).to_sql("jobspy", conn, if_exists='append', index=False)
+
+    conn.commit()
     conn.close()
-    print(f"Loading complete for {jobs_chunk.shape[0]} jobs.")
+
+    print(f"Loaded {jobs_chunk.shape[0]} jobs into the database for '{search_term}'.")
 
 
 def process_chunk(jobs_chunk, search_term, country):
@@ -157,7 +170,7 @@ def process_chunk(jobs_chunk, search_term, country):
     Process a single chunk: transform and load.
     """
     transformed_jobs = transform(jobs_chunk, search_term, country)
-    load(transformed_jobs)
+    load(transformed_jobs, search_term)
 
 
 def etl(search_term, country, hours_old):

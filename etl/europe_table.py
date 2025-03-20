@@ -30,6 +30,7 @@ def update_europe_table(conn):
                 geo_df.loc[loc_df.index, "name"] = row['city']
 
     # Now, delete alternate names:
-    geo_df.drop('alternate_names', axis=1, inplace=True)
+    #geo_df.drop('alternate_names', axis=1, inplace=True)
+    geo_df = geo_df[['name', 'ascii_name', 'cou_name_en', 'country_code', 'feature_code', 'timezone', 'lat', 'lon', 'population']]
 
     geo_df.to_sql(name='europe', con=conn, if_exists='replace')

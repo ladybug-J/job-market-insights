@@ -20,10 +20,14 @@ EU_countries = ["Austria", "Belgium", "Czech Republic", "Denmark", "Finland", "F
                 ]
 
 def run_etl(conn, search_term, countries, hours_old):
-    for country in countries:
+    # Sequential:
+    #for country in countries:
         #subprocess.run(["python3", "./etl/main.py", "--search_term", search_term, "--country", country])
-        etl.main(conn, search_term, country, hours_old)
-        etl.update_europe_table(conn)
+        #etl.main(conn, search_term, country, hours_old)
+        #etl.update_europe_table(conn)
+    # Parallel:
+    etl.run_parallel_etl([search_term], countries, hours_old)
+    etl.update_europe_table(conn)
 
 @st.cache_resource
 def connect2db(db_name):

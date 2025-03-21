@@ -29,7 +29,7 @@ def run_etl(conn, search_term, countries, hours_old):
         #etl.update_europe_table(conn)
     # Parallel:
     etl.run_parallel_etl([search_term], countries, hours_old)
-    etl.update_europe_table(conn)
+    #etl.update_europe_table(conn)
 
 @st.cache_resource
 def connect2db(db_name):

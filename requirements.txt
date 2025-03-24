@@ -44,7 +44,6 @@ fqdn==1.5.1
 fsspec==2025.2.0
 gitdb==4.0.12
 GitPython==3.1.44
-googletrans==4.0.0rc1
 googletrans-py==4.0.0
 greenlet==3.1.1
 h11==0.14.0

@@ -2,6 +2,7 @@ import pandas as pd
 import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
 
 def timeseries_from_db(conn, country, sts, days_old):
@@ -55,6 +56,17 @@ def timeseries_from_db(conn, country, sts, days_old):
 
 def description_language(conn, countries, search_term, days_old):
 
+    desc_lang = pd.read_sql("SELECT DISTINCT description_language FROM jobspy ORDER BY description_language DESC;", conn)
+    # Create a colormap using Matplotlib
+    cmap = plt.get_cmap("Paired")
+
+    # Normalize indices to map them to colors
+    norm = plt.Normalize(0, desc_lang.shape[0] - 1)
+    colors = [cmap(norm(i))[:3] for i in range(desc_lang.shape[0])]
+    # Convert to Plotly-compatible RGB strings
+    rgb_colors = [f"rgb({int(r * 255)}, {int(g * 255)}, {int(b * 255)})" for r, g, b in colors]
+    color_map = dict(zip(desc_lang['description_language'].values, rgb_colors))
+
     query = f"""
         SELECT country, COUNT(description_language) AS 'Number of Jobs', description_language
         FROM jobspy
@@ -75,7 +87,8 @@ def description_language(conn, countries, search_term, days_old):
             y=lang_df.index,  # Categories on the Y-axis
             x=lang_df[lang],  # Values for the first category
             name=lang,  # Name of the first group
-            orientation='h'  # Horizontal orientation
+            orientation='h',  # Horizontal orientation
+            marker=dict(color=color_map[lang])
         ))
 
     fig.update_layout(

@@ -158,8 +158,10 @@ if __name__ == "__main__":
 
         with st.container():
             st.subheader("Time-series from DB")
-            st.write("The combined labels (e.g. data scientis-AI engineer) correspond to jobs that are queried with both "
-                     "search terms. ")
+            st.write("The following time-series show the amount of jobs in the database for the selected time-period and "
+                     "search term. The combined labels (e.g. data scientis-AI engineer) correspond to jobs that are "
+                     "found with both search terms. The colored areas give a better visualization of the dominant search "
+                     "term.")
             tabs = st.tabs(select_countries[::-1])
             for i, tab in enumerate(tabs):
                 with tab:
@@ -171,7 +173,9 @@ if __name__ == "__main__":
                     )
 
         st.subheader("Original language of the description text")
-        st.write("Make colors consistent between search terms!")
+        st.write("Even if the search term is written in English, the job descriptions can still be in a different language. "
+                 "The following bar plots show the number of job offers for each term and the languages of their descriptions "
+                 "per country.")
         st_cols = st.columns(len(select_sts))
         for i, search_term in enumerate(select_sts):
             with st_cols[i]:
@@ -181,5 +185,9 @@ if __name__ == "__main__":
         # Show plot with ads per city for each country
         with st.container():
             st.subheader("Job locations around Europe")
-            st.write("Beware the cluster numbers refer to the number of locations in the area, not the number of job postings.")
-            map_plots.jobs_in_db(conn, select_countries, select_sts, days_old)
+            st.write("The following map plot gives an insight of the job offer distribution around Europe, where the "
+                     "size and color of the points represents the number of jobs in each of the locations.")
+            map_plots.color_size_plot(conn, select_countries, select_sts, days_old)
+
+            # st.write("Beware the cluster numbers refer to the number of locations in the area, not the number of job postings.")
+            # map_plots.jobs_in_db(conn, select_countries, select_sts, days_old)

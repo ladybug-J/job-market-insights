@@ -1,10 +1,11 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+import plotly.graph_objects as go
+import numpy as np
 
 
-def jobs_in_db(conn, countries, sts, days_old):
-
+def query_map(conn, countries, sts, days_old):
     if len(countries)==0:
         return
     elif len(countries)==1:
@@ -42,7 +43,13 @@ def jobs_in_db(conn, countries, sts, days_old):
         {country_filter}
         """
 
-    job_count = pd.read_sql(query, conn)
+    return pd.read_sql(query, conn)
+
+
+def jobs_in_db(conn, countries, sts, days_old):
+
+    job_count = query_map(conn, countries, sts, days_old)
+
     job_count['size'] = 200
 
     fig = px.scatter_map(
@@ -60,6 +67,43 @@ def jobs_in_db(conn, countries, sts, days_old):
         cluster=dict(
             enabled=True
         )
+    )
+
+    st.plotly_chart(fig)
+
+
+def color_size_plot(conn, countries, sts, days_old):
+
+    job_count = query_map(conn, countries, sts, days_old)
+    # Create Hover Text
+    job_count["hover_text"] = job_count["city"] + "<br>Number of jobs: " + job_count["nr_jobs"].astype(str)
+
+    fig = go.Figure(go.Scattermap(
+        lat=job_count['lat'],
+        lon=job_count['lon'],
+        mode="markers",
+        marker=dict(
+            size=8.0 * np.log(job_count['nr_jobs']),
+            color=job_count['nr_jobs'],
+            colorscale="viridis",  # Color scale applied
+            colorbar=dict(title="Number of Jobs")
+
+        ),
+        hovertext=job_count['hover_text'],
+        hoverinfo="text"
+    ))
+
+    # Update Layout (Mapbox settings)
+    fig.update_layout(
+        map=dict(
+            center=dict(
+                lat=47.0,
+                lon=9.0
+            ),
+            zoom=3.0
+        ),
+        coloraxis=dict(colorscale='viridis'),
+        margin=dict(l=0, r=0, t=0, b=0)
     )
 
     st.plotly_chart(fig)

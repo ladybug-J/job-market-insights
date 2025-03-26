@@ -5,7 +5,7 @@ import streamlit as st
 from langdetect import detect
 from googletrans import Translator
 
-@st.cache_data(ttl=datetime.timedelta(days=14))
+#@st.cache_data(ttl=datetime.timedelta(days=14))
 def extract(search_term, country, hours_old):
     """
     Get jobspy scropper DataFrame
@@ -23,7 +23,7 @@ def extract(search_term, country, hours_old):
         country_indeed=country
     )
 
-@st.cache_data(ttl=datetime.timedelta(days=1))
+#@st.cache_data(ttl=datetime.timedelta(days=1))
 def transform(jobs, search_term, country):
     """
     Clean the data (analysed in Jupyter notebook analyse_jobspy.ipynb) by selecting wanted columns, removing duplicate

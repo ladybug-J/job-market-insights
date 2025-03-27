@@ -7,7 +7,8 @@ import streamlit.components.v1 as components
 
 import etl
 from visualization import map_plots, var_plots
-from utils.random import generate_diff_metrics
+from utils.random import generate_diff_metrics, ranking_table
+from dbtools import queries
 
 st.set_page_config(
         page_title="Job market insights",
@@ -130,7 +131,8 @@ if __name__ == "__main__":
             options=unique_countries,
             default=unique_countries,
             help="This select box shows the countries that are already in the database. If you are looking for another "
-                 "country's data, please update database."
+                 "country's data, please update database.",
+            key="select_countries"
         )
 
         select_sts = st.multiselect(
@@ -138,7 +140,8 @@ if __name__ == "__main__":
             options=unique_st,
             default=unique_st,
             help="This select box shows the search terms that are already in the database. If you are looking for another "
-                 "search term's data, please update database."
+                 "search term's data, please update database.",
+            key="select_sts"
         )
 
     if DB_ON:
@@ -157,20 +160,19 @@ if __name__ == "__main__":
         st.markdown(f"## Trends the last {days_old} days")
 
         with st.container():
-            st.subheader("Time-series from DB")
+            st.subheader("Search term popularity - time-series from DB")
             st.write("The following time-series show the amount of jobs in the database for the selected time-period and "
                      "search term. The combined labels (e.g. data scientis-AI engineer) correspond to jobs that are "
                      "found with both search terms. The colored areas give a better visualization of the dominant search "
                      "term.")
+
+
             tabs = st.tabs(select_countries[::-1])
+
             for i, tab in enumerate(tabs):
                 with tab:
-                    var_plots.timeseries_from_db(
-                        conn,
-                        select_countries[::-1][i],
-                        select_sts,
-                        days_old
-                    )
+                    country = select_countries[::-1][i]
+                    var_plots.timeseries_from_db(conn, country, select_sts, days_old)
 
         st.subheader("Original language of the description text")
         st.write("Even if the search term is written in English, the job descriptions can still be in a different language. "
@@ -184,10 +186,27 @@ if __name__ == "__main__":
 
         # Show plot with ads per city for each country
         with st.container():
-            st.subheader("Job locations around Europe")
-            st.write("The following map plot gives an insight of the job offer distribution around Europe, where the "
-                     "size and color of the points represents the number of jobs in each of the locations.")
-            map_plots.color_size_plot(conn, select_countries, select_sts, days_old)
+            col1, col2 = st.columns([0.6, 0.4])
+            with col1:
+                st.subheader("Job locations around Europe")
+                st.write(
+                    "The following map plot gives an insight of the job offer distribution around Europe, where the "
+                    "size and color of the points represents the number of jobs in each of the locations.")
+                map_plots.color_size_plot(conn, select_countries, select_sts, days_old)
+            with col2:
+                pass
 
-            # st.write("Beware the cluster numbers refer to the number of locations in the area, not the number of job postings.")
-            # map_plots.jobs_in_db(conn, select_countries, select_sts, days_old)
+        with st.container():
+            st.subheader("Top cities with most of the job postings")
+            st.write("Hello?")
+            #sorted_jobs = job_count.sort_values(by="nr_jobs", ascending=False).reset_index()
+            #st.table(sorted_jobs)
+            ranking_table(conn, select_sts, days_old)
+
+
+        with st.container():
+            if False:
+                search = "airflow"
+                components.iframe(f"https://www.google.com/search?igu=1&ei=&q={search}",
+                                  height=1000
+                                  )

@@ -4,54 +4,12 @@ import streamlit as st
 import plotly.graph_objects as go
 import numpy as np
 
-
-def query_map(conn, countries, sts, days_old):
-    if len(countries)==0:
-        return
-    elif len(countries)==1:
-        country_filter = f"WHERE country='{countries[0]}'"
-    else:
-        country_filter = f"WHERE country IN {tuple(countries)}"
-
-    if len(sts)==0:
-        return
-    elif len(sts)==1:
-        subquery = f"""SELECT id
-                    FROM searchterms
-                    WHERE search_term='{sts[0]}'
-                    """
-    else:
-        subquery = f"""SELECT id
-                        FROM searchterms
-                        WHERE search_term IN {tuple(sts)}
-                        """
-
-    query = f"""
-        SELECT subquery.city, lat, lon, subquery.nr_jobs
-        FROM europe
-        JOIN 
-            (
-            SELECT id, city, country, count(*) as nr_jobs
-            FROM jobspy
-            WHERE id IN (
-                {subquery}
-                )
-            AND jobspy.date_posted >= date('now', '-{days_old} days')
-            GROUP BY city 
-            ) AS subquery
-        ON europe.name=subquery.city AND europe.cou_name_en=subquery.country
-        {country_filter}
-        """
-
-    return pd.read_sql(query, conn)
+from dbtools import queries
 
 
 def jobs_in_db(conn, countries, sts, days_old):
-
-    job_count = query_map(conn, countries, sts, days_old)
-
+    job_count = queries.count_total_map(conn, countries, sts, days_old)
     job_count['size'] = 200
-
     fig = px.scatter_map(
         job_count,
         lat="lat",
@@ -73,10 +31,11 @@ def jobs_in_db(conn, countries, sts, days_old):
 
 
 def color_size_plot(conn, countries, sts, days_old):
-
-    job_count = query_map(conn, countries, sts, days_old)
+    job_count = queries.count_total_map(conn, countries, sts, days_old)
     # Create Hover Text
-    job_count["hover_text"] = job_count["city"] + "<br>Number of jobs: " + job_count["nr_jobs"].astype(str)
+    job_count["hover_text"] = \
+        job_count["city"] + \
+        "<br>Number of jobs: " + job_count["nr_jobs"].astype(str)
 
     fig = go.Figure(go.Scattermap(
         lat=job_count['lat'],

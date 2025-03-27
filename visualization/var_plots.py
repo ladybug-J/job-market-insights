@@ -4,33 +4,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 
+from dbtools import queries
+
 
 def timeseries_from_db(conn, country, sts, days_old):
-    if len(sts)==0:
-        return
-    elif len(sts)==1:
-        filter_st = f"r.search_term = '{sts[0]}'"
-    else:
-        filter_st = f"r.search_term IN {tuple(sts)}"
 
-    query = f"""
-        SELECT jobspy.id, jobspy.date_posted, GROUP_CONCAT(r.search_term, '-') as search_term
-        FROM jobspy
-        LEFT JOIN (
-            SELECT DISTINCT id, search_term FROM searchterms
-        ) r ON r.id = jobspy.id
-        WHERE jobspy.country='{country}' AND {filter_st} AND jobspy.date_posted >= date('now', '-{days_old} days')
-        GROUP BY jobspy.id, jobspy.date_posted
-        """
-    df = pd.read_sql(query, conn)
-    #query = f"""
-    #        SELECT id, count(search_term) as countst
-    #        FROM searchterms
-    #        WHERE search_term IN {tuple(sts)}
-    #        GROUP BY id
-    #        HAVING countst > 1
-    #        """
-    #st.table(pd.read_sql(query, conn))
+    df = queries.merge_sts(conn, sts, days_old)
+    df = df.loc[df['country'] == country].drop(['country', 'city'], axis=1)
 
     df_grouped = df.groupby(
         by=['date_posted', 'search_term'],
@@ -52,37 +32,33 @@ def timeseries_from_db(conn, country, sts, days_old):
         lambda trace: trace.update(visible='legendonly')
         if "-" in trace.name else None
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, key=f"{country}_ts")
+
 
 def description_language(conn, countries, search_term, days_old):
+    lang_df = queries.count_languages(conn, countries, search_term, days_old)
 
-    desc_lang = pd.read_sql("SELECT DISTINCT description_language FROM jobspy ORDER BY description_language DESC;", conn)
     # Create a colormap using Matplotlib
-    cmap = plt.get_cmap("Paired")
+    cmap = plt.get_cmap("inferno")
+
+    diff_lang = pd.read_sql("SELECT DISTINCT description_language from jobspy;", conn)\
+                    .sort_values(by='description_language')
 
     # Normalize indices to map them to colors
-    norm = plt.Normalize(0, desc_lang.shape[0] - 1)
-    colors = [cmap(norm(i))[:3] for i in range(desc_lang.shape[0])]
+    norm = plt.Normalize(0, diff_lang.shape[0] - 1)
+    colors = [cmap(norm(i))[:3] for i in range(diff_lang.shape[0])]
     # Convert to Plotly-compatible RGB strings
     rgb_colors = [f"rgb({int(r * 255)}, {int(g * 255)}, {int(b * 255)})" for r, g, b in colors]
-    color_map = dict(zip(desc_lang['description_language'].values, rgb_colors))
+    color_map = dict(zip(list(diff_lang['description_language'].values), rgb_colors))
 
-    query = f"""
-        SELECT country, COUNT(description_language) AS 'Number of Jobs', description_language
-        FROM jobspy
-        WHERE country IN {tuple(countries)} AND id IN (
-            SELECT id FROM searchterms WHERE search_term='{search_term}'
-        ) AND date_posted >= date('now', '-{days_old} days')
-        GROUP BY description_language, country
-    """
-    lang_df = pd.read_sql(query, conn).pivot(index='country',
-                                             columns=['description_language'],
-                                             values='Number of Jobs')\
-                                      .fillna(0.0)
-
+    lang_df = lang_df.pivot(
+        index='country',
+        columns=['description_language'],
+        values='Number of Jobs') \
+        .fillna(0.0)
 
     fig = go.Figure()
-    for lang in lang_df.columns:
+    for lang in lang_df.columns[::-1]:
         fig.add_trace(go.Bar(
             y=lang_df.index,  # Categories on the Y-axis
             x=lang_df[lang],  # Values for the first category
@@ -97,4 +73,4 @@ def description_language(conn, countries, search_term, days_old):
         xaxis_title='Number of Jobs',
         yaxis_title='Country',
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, key=f"{search_term}_lang")

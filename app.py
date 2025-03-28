@@ -195,20 +195,8 @@ if __name__ == "__main__":
                     "size and color of the points represents the number of jobs in each of the locations.")
                 map_plots.color_size_plot(conn, select_countries, select_sts, days_old)
             with col2:
+                st.subheader("Top 10 cities with most of the job postings")
+                st.write("- Add legend percentage/color"
+                         "- Reverser order")
+                st.write("")
                 var_plots.bar_ranking(conn, select_sts, days_old)
-
-
-        with st.container():
-            st.subheader("Top cities with most of the job postings")
-            st.write("Hello?")
-            #sorted_jobs = job_count.sort_values(by="nr_jobs", ascending=False).reset_index()
-            #st.table(sorted_jobs)
-            ranking_table(conn, select_sts, days_old)
-
-
-        with st.container():
-            if False:
-                search = "airflow"
-                components.iframe(f"https://www.google.com/search?igu=1&ei=&q={search}",
-                                  height=1000
-                                  )

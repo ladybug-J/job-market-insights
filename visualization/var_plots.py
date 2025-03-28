@@ -74,3 +74,35 @@ def description_language(conn, countries, search_term, days_old):
         yaxis_title='Country',
     )
     st.plotly_chart(fig, key=f"{search_term}_lang")
+
+
+def bar_ranking(conn, sts, days_old):
+    df = queries.merge_sts(conn, sts, days_old)
+    total = df.groupby(by=['city', 'country']).count() \
+        .rename({'id': 'Total jobs'}, axis=1) \
+        .drop(['date_posted', 'search_term'], axis=1) \
+        .sort_values(by='Total jobs', ascending=False)
+
+    total_country = total.groupby(by='country', axis=0).sum()
+    # Some cities are wrong:
+    remove = ['Home Office', 'España', 'En remoto', 'DE']
+    i = 0
+    for index, row in total.iterrows():
+        if (i < 10 and index[0] not in remove):
+            total.loc[index, ('Percentage country')] = (100*row['Total jobs']/total_country.loc[index[1], 'Total jobs']).round(1)
+            i+=1
+
+    total.dropna(inplace=True)
+    total.reset_index(inplace=True)
+
+    try:
+        fig = go.Figure()
+        fig.add_trace(go.Bar(
+            y=total['city'],
+            x=total['Total jobs'],
+            orientation='h',
+            marker=dict(color=total['Percentage country']/100)
+        ))
+        st.plotly_chart(fig)
+    except:
+        pass

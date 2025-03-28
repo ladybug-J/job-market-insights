@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 DB_PATH = "jobs.db"
 
-@st.cache_data(ttl=datetime.timedelta(days=14))
+#@st.cache_data(ttl=datetime.timedelta(days=14))
 def extract(search_term, country, hours_old):
     """
     Scrapes job postings and removes duplicates in this step.
@@ -45,7 +45,7 @@ def extract(search_term, country, hours_old):
     return jobs_df
 
 
-@st.cache_data(ttl=datetime.timedelta(days=1))
+#@st.cache_data(ttl=datetime.timedelta(days=1))
 def transform(jobs_chunk, search_term, country):
     """
     Transforms a chunk of job data: cleans, detects language, and translates descriptions.

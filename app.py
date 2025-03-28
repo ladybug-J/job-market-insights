@@ -146,8 +146,9 @@ if __name__ == "__main__":
 
     if DB_ON:
         with st.container():
-            st.subheader("Job postings today")
-            st.write("This metrics correspond to the sum of all job postings from the selected search terms per country today")
+            st.subheader("Job postings this week vs previous")
+            st.write("This metrics correspond to the sum of all job postings from the selected search terms per country the"
+                     "last 7 days.")
             if select_countries or select_sts:
                 generate_diff_metrics(cursor, select_countries, select_sts)
 
@@ -194,7 +195,8 @@ if __name__ == "__main__":
                     "size and color of the points represents the number of jobs in each of the locations.")
                 map_plots.color_size_plot(conn, select_countries, select_sts, days_old)
             with col2:
-                pass
+                var_plots.bar_ranking(conn, select_sts, days_old)
+
 
         with st.container():
             st.subheader("Top cities with most of the job postings")

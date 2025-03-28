@@ -8,7 +8,7 @@ def generate_diff_metrics(cursor, countries, sts):
             st_placeholders = ','.join('?' * len(sts))
 
             count_1day = cursor.execute(f"""SELECT count(*) FROM jobspy WHERE country='{countries[i]}'
-                AND date_posted > date('now', '-1 days')
+                AND date_posted > date('now', '-7 days')
                 AND id IN (
                     SELECT id 
                     FROM searchterms
@@ -17,8 +17,8 @@ def generate_diff_metrics(cursor, countries, sts):
                 """, sts).fetchall()[0][0]
 
             count_2day = cursor.execute(f"""SELECT count(*) FROM jobspy WHERE country='{countries[i]}' 
-                AND date_posted > date('now', '-2 days')
-                AND date_posted <= date('now', '-1 days')
+                AND date_posted > date('now', '-14 days')
+                AND date_posted <= date('now', '-7 days')
                 AND id IN (
                     SELECT id 
                     FROM searchterms
@@ -65,6 +65,7 @@ def ranking_table(conn, sts, days_old):
             total.loc[index, ('Percentage country')] = (100*row['Total jobs']/total_country.loc[index[1], 'Total jobs']).round(1)
             i+=1
     total.dropna(inplace=True)
+
 
     st.table(total)
     pass

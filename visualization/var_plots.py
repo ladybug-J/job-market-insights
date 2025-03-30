@@ -8,7 +8,6 @@ from dbtools import queries
 
 
 def timeseries_from_db(conn, country, sts, days_old):
-
     df = queries.merge_sts(conn, sts, days_old)
     df = df.loc[df['country'] == country].drop(['country', 'city'], axis=1)
 
@@ -28,10 +27,10 @@ def timeseries_from_db(conn, country, sts, days_old):
         yaxis_title="Number of Jobs"
     )
     fig.update_traces(line=dict(width=1))
-    fig.for_each_trace(
-        lambda trace: trace.update(visible='legendonly')
-        if "-" in trace.name else None
-    )
+    #fig.for_each_trace(
+    #    lambda trace: trace.update(visible='legendonly')
+    #    if "-" in trace.name else None
+    #)
     st.plotly_chart(fig, key=f"{country}_ts")
 
 
@@ -41,8 +40,8 @@ def description_language(conn, countries, search_term, days_old):
     # Create a colormap using Matplotlib
     cmap = plt.get_cmap("inferno")
 
-    diff_lang = pd.read_sql("SELECT DISTINCT description_language from jobspy;", conn)\
-                    .sort_values(by='description_language')
+    diff_lang = pd.read_sql("SELECT DISTINCT description_language from jobspy;", conn) \
+        .sort_values(by='description_language')
 
     # Normalize indices to map them to colors
     norm = plt.Normalize(0, diff_lang.shape[0] - 1)
@@ -76,7 +75,7 @@ def description_language(conn, countries, search_term, days_old):
     st.plotly_chart(fig, key=f"{search_term}_lang")
 
 
-def bar_ranking(conn, sts, days_old):
+def bar_ranking(conn, sts, days_old, stack=False):
     df = queries.merge_sts(conn, sts, days_old)
     total = df.groupby(by=['city', 'country']).count() \
         .rename({'id': 'Total jobs'}, axis=1) \
@@ -89,20 +88,67 @@ def bar_ranking(conn, sts, days_old):
     i = 0
     for index, row in total.iterrows():
         if (i < 10 and index[0] not in remove):
-            total.loc[index, ('Percentage country')] = (100*row['Total jobs']/total_country.loc[index[1], 'Total jobs']).round(1)
-            i+=1
+            total.loc[index, ('Percentage country')] = (100 * row['Total jobs'] / total_country.loc[index[1], 'Total jobs']).round(1)
+            i += 1
 
     total.dropna(inplace=True)
     total.reset_index(inplace=True)
 
-    try:
+    layout_dict = dict(
+        yaxis=dict(autorange="reversed"),
+        margin=dict(l=40, r=40, t=40, b=40)
+    )
+
+    if not stack:
         fig = go.Figure()
-        fig.add_trace(go.Bar(
+        bar_dict = dict(
             y=total['city'],
             x=total['Total jobs'],
             orientation='h',
-            marker=dict(color=total['Percentage country']/100)
+            marker=dict(
+                color=total['Percentage country'],
+                colorscale='blues',
+                showscale=True,
+                colorbar=dict(title="%")
+            )
+        )
+        fig.add_trace(go.Bar(
+            **bar_dict
         ))
-        st.plotly_chart(fig)
-    except:
-        pass
+        layout_dict.update(
+            xaxis=dict(
+                title='Number of job postings',
+                showgrid=True,
+                gridcolor="rgba(200,200,200,0.3)",
+                dtick=20
+            ),
+        )
+
+    else:
+        fig = go.Figure()
+        for i, city in enumerate(total["city"].unique()):
+            df_city = total[total["city"] == city]
+            fig.add_trace(go.Bar(
+                y=df_city["country"],  # Countries as single bars
+                x=df_city["Percentage country"],  # City jobs stacked within the country bar
+                name=city,  # Legend for cities
+                orientation='h',
+                marker=dict(
+                    color=i
+                )
+            ))
+        layout_dict.update(
+            barmode='stack',
+            xaxis=dict(
+                title='Percentage of jobs',
+                showgrid=True,
+                gridcolor="rgba(200,200,200,0.3)",
+                dtick=10
+            ),
+        )
+
+
+    fig.update_layout(
+        **layout_dict
+    )
+    st.plotly_chart(fig)

@@ -62,7 +62,8 @@ def color_size_plot(conn, countries, sts, days_old):
             zoom=3.0
         ),
         coloraxis=dict(colorscale='viridis'),
-        margin=dict(l=0, r=0, t=0, b=0)
+        margin=dict(l=0, r=0, t=0, b=0),
+        height=600
     )
 
     st.plotly_chart(fig)

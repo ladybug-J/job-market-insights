@@ -1,0 +1,199 @@
+{
+  "Data Science": [
+    "Jupyter Notebook",
+    "Pandas",
+    "NumPy",
+    "SciPy",
+    "Statsmodels",
+    "RapidMiner",
+    "DataRobot",
+    "Alteryx"
+  ],
+  "Machine Learning": [
+    "Scikit-Learn",
+    "TensorFlow",
+    "PyTorch",
+    "XGBoost",
+    "LightGBM",
+    "H2O.ai",
+    "MLflow",
+    "Vertex AI",
+    "SageMaker"
+  ],
+  "Artificial Intelligence": [
+    "OpenAI GPT",
+    "DeepMind AlphaFold",
+    "Hugging Face Transformers",
+    "FastAI",
+    "Keras",
+    "NVIDIA Triton",
+    "Caffe",
+    "DeepStream"
+  ],
+  "Data Engineering": [
+    "Apache Spark",
+    "Apache Kafka",
+    "Apache Flink",
+    "dbt",
+    "Airflow",
+    "AWS Glue",
+    "Google Dataflow",
+    "Microsoft Azure Data Factory",
+    "Talend",
+    "Informatica"
+  ],
+  "Data Analysis": [
+    "Excel",
+    "Google Sheets",
+    "Power BI",
+    "Tableau",
+    "Looker",
+    "Domo",
+    "Qlik Sense",
+    "Sisense"
+  ],
+  "Data Visualization": [
+    "Matplotlib",
+    "Seaborn",
+    "Plotly",
+    "D3.js",
+    "ggplot2",
+    "Highcharts",
+    "ECharts",
+    "Google Data Studio"
+  ],
+  "Workflow Automation": [
+    "Apache Airflow",
+    "Prefect",
+    "Luigi",
+    "Dagster",
+    "Zapier",
+    "Microsoft Power Automate",
+    "UiPath",
+    "Automation Anywhere",
+    "Workato"
+  ],
+  "Cloud Platforms": [
+    "Amazon Web Services (AWS)",
+    "Google Cloud Platform (GCP)",
+    "Microsoft Azure",
+    "IBM Cloud",
+    "Oracle Cloud",
+    "Alibaba Cloud",
+    "Salesforce Cloud",
+    "SAP Cloud"
+  ],
+  "Big Data": [
+    "Hadoop",
+    "Hive",
+    "Presto",
+    "Dask",
+    "Snowflake",
+    "Google BigQuery",
+    "Amazon Redshift",
+    "ClickHouse",
+    "Databricks",
+    "Vertica"
+  ],
+  "DevOps & CI/CD": [
+    "Docker",
+    "Kubernetes",
+    "Terraform",
+    "Ansible",
+    "Jenkins",
+    "GitLab CI/CD",
+    "CircleCI",
+    "ArgoCD",
+    "Spinnaker",
+    "Helm"
+  ],
+  "Database Technologies": [
+    "PostgreSQL",
+    "MySQL",
+    "MongoDB",
+    "Cassandra",
+    "Redis",
+    "MariaDB",
+    "CockroachDB",
+    "Neo4j",
+    "Amazon DynamoDB",
+    "Google Firestore"
+  ],
+  "Programming Languages": [
+    "Python",
+    "R",
+    "SQL",
+    "Scala",
+    "Julia",
+    "Java",
+    "C++",
+    "C#",
+    "JavaScript",
+    "Go"
+  ],
+  "Backend Development": [
+    "Django",
+    "Flask",
+    "Spring Boot",
+    "Express.js",
+    "Ruby on Rails",
+    "FastAPI",
+    "NestJS",
+    "ASP.NET Core"
+  ],
+  "Frontend Development": [
+    "React",
+    "Vue.js",
+    "Angular",
+    "Svelte",
+    "Next.js",
+    "Nuxt.js",
+    "Tailwind CSS",
+    "Bootstrap"
+  ],
+  "Cybersecurity": [
+    "Splunk",
+    "Wireshark",
+    "Nmap",
+    "Burp Suite",
+    "Metasploit",
+    "Palo Alto Networks",
+    "Tenable Nessus",
+    "Cloudflare",
+    "IBM QRadar"
+  ],
+  "Project Management & Collaboration": [
+    "Jira",
+    "Trello",
+    "Asana",
+    "Monday.com",
+    "Slack",
+    "Microsoft Teams",
+    "Confluence",
+    "Miro",
+    "Notion"
+  ],
+  "Customer Relationship Management (CRM)": [
+    "Salesforce",
+    "HubSpot",
+    "Zoho CRM",
+    "Microsoft Dynamics",
+    "Pipedrive",
+    "Freshsales"
+  ],
+  "Enterprise Resource Planning (ERP)": [
+    "SAP ERP",
+    "Oracle ERP",
+    "Microsoft Dynamics 365",
+    "Workday",
+    "Netsuite"
+  ],
+  "E-commerce Platforms": [
+    "Shopify",
+    "Magento",
+    "WooCommerce",
+    "BigCommerce",
+    "OpenCart",
+    "PrestaShop"
+  ]
+}

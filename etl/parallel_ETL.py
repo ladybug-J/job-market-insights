@@ -104,13 +104,17 @@ def load(jobs_chunk, search_term):
     Loads a chunk of transformed jobs into SQLite database.
     First removes existing IDs from 'searchterms', then from 'jobspy'.
     """
+    MAX_RETRIES = 10
+    RETRY_DELAY = 5
+
     if jobs_chunk.empty:
         print("No jobs to load.")
         return
 
-    conn = sqlite3.connect(DB_PATH)
+    #retries = 0
+    #while retries < MAX_RETRIES:
+    conn = sqlite3.connect(DB_PATH, timeout=10)
     cursor = conn.cursor()
-
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS jobspy (
             id TEXT PRIMARY KEY,
@@ -163,7 +167,13 @@ def load(jobs_chunk, search_term):
     conn.close()
 
     print(f"Loaded {jobs_chunk.shape[0]} jobs into the database for '{search_term}'.")
-
+        #except sqlite3.OperationalError as e:
+        #    if "database is locked" in str(e):
+        #        retries += 1
+        #        print(f"Database locked. Retrying in {retry_delay} seconds... (Attempt {retries}/{max_retries})")
+        #        time.sleep(RETRY_DELAY)
+        #    else:
+        #        print("Max retries reached. Could not load jobs due to database lock.")
 
 def process_chunk(jobs_chunk, search_term, country):
     """

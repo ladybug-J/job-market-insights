@@ -51,21 +51,14 @@ if __name__ == "__main__":
                 "The goal of this dashboard is to get better insights of the job market trends in Europe. Given the "
                 "search terms and countries you are interested in, you can update the database, and after selecting "
                 "them in the metrics sidebar, generate automated visualizations and insights. The data is scraped from "
-                "Indeed and Glassdoor job portals using the open-source Python library JobSpy and saved into an sqlite "
-                "database."
+                "Indeed and Glassdoor job portals using the open-source Python library JobSpy. The output is transformed "
+                "for removing duplicate job posts between pages, selecting meaninful data, and detecting and translating "
+                "the language of the description. Finally, the data is loaded into an sqlite database."
                 "</div>",
                 unsafe_allow_html=True
                 )
     st.write("")
-    st.markdown("<div style='text-align: justify;'>"
-                "One of the most important data of the job posts is contained in the job descriptions. To be able to "
-                "extract key information from them (as the specific field for general jobs as 'data scientist', or tools "
-                "and experience the companies require), the current open-source Large Language Models (LLMs) will be "
-                "leveraged."
-                "</div>",
-                unsafe_allow_html=True
-                )
-    st.write("")
+
     st.markdown("⚠️ App still under construction!")
 
     with st.sidebar:
@@ -101,7 +94,7 @@ if __name__ == "__main__":
             hours_old = st.number_input(
                 label="How many hours old should the job postings be when querying and saving?",
                 placeholder="Insert integer",
-                value=None,
+                value=24,
                 step=24,
                 min_value=24,
                 help="If no value is inserted, the entire data available will be queried (with a maximum of 400 posts per "
@@ -138,7 +131,7 @@ if __name__ == "__main__":
         select_sts = st.multiselect(
             "Select search terms",
             options=unique_st,
-            default=unique_st,
+            default=["Data Scientist", "Data Analyst", "Data Engineer"],
             help="This select box shows the search terms that are already in the database. If you are looking for another "
                  "search term's data, please update database.",
             key="select_sts"
@@ -185,7 +178,6 @@ if __name__ == "__main__":
                 var_plots.description_language(conn, select_countries, search_term, days_old)
 
 
-        # Show plot with ads per city for each country
         with st.container():
             col1, col2 = st.columns([0.6, 0.4])
             with col1:
@@ -195,8 +187,16 @@ if __name__ == "__main__":
                     "size and color of the points represents the number of jobs in each of the locations.")
                 map_plots.color_size_plot(conn, select_countries, select_sts, days_old)
             with col2:
-                st.subheader("Top 10 cities with most of the job postings")
-                st.write("- Add legend percentage/color"
-                         "- Reverser order")
-                st.write("")
-                var_plots.bar_ranking(conn, select_sts, days_old)
+                st.subheader("Job distribution insights")
+                tc_tabs = st.tabs(["Top 10 cities", "Distribution"])
+                with tc_tabs[0]:
+                    stack = st.checkbox(
+                        "Stack per country",
+                        value=False,
+                        help="Stack the cities grouped by country and representing the percentage they correspond to "
+                             "the total jobs in the country."
+                    )
+                    if not stack:
+                        st.write(f"The top ten cities with the most jobs the last {days_old} days. The color of the bars "
+                                 "represent the percentage of the jobs the city has with respect to the entire country.")
+                    var_plots.bar_ranking(conn, select_sts, days_old, stack=stack)

@@ -64,8 +64,8 @@ def ranking_table(conn, sts, days_old):
         if (i < 10 and index[0] not in remove):
             total.loc[index, ('Percentage country')] = (100*row['Total jobs']/total_country.loc[index[1], 'Total jobs']).round(1)
             i+=1
-    total.dropna(inplace=True)
 
+    total.dropna(inplace=True)
 
     st.table(total)
     pass

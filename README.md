@@ -6,7 +6,7 @@
 https://job-market-insights.streamlit.app
 
 ### Overview  
-The goal of this project is to build a dashboard that provides deeper insights into the European job market. By default, Indeed and Glassdoor are scraped using the following search terms: _'Data Scientist'_, _'Data Analyst'_, _'AI Engineer'_, in the following countries: _'Austria'_, _'France'_, _'Germany'_, _'Spain'_, _'Switzerland'_.
+The goal of this project is to build a dashboard that provides deeper insights into the European job market. By default, Indeed and Glassdoor are scraped using the following search terms: _'Data Scientist'_, _'Data Analyst'_, _'Data Engineer'_, in the following countries: _'Austria'_, _'France'_, _'Germany'_, _'Spain'_, _'Switzerland'_.
 
 ### Workflow  
 1. **Data Collection**:  
@@ -28,5 +28,9 @@ The goal of this project is to build a dashboard that provides deeper insights i
    - The LLM has to run locally, as streamlit cloud probably does not have enough resources
    - This implies the ETL should also run locally
    - Scheduling a daily update of the database locally and sending it to git could solve the problem
+  
+4. **Alternative to LLMs:**
+
+   LLMs require a large processing power that cannot be hosted in the Streamlit cloud. Therefore, a simpler alternative to get some insights of the main tools on demand, a JSON file containing {"tech domain": list(tools)} generated using ChatGPT will be used to count the amount of times a tool is mentioned in the job descriptions.
 
 

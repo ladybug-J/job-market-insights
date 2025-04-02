@@ -42,7 +42,7 @@ def count_total_map(conn, countries, sts, days_old):
 
 
 
-def merge_sts(conn, sts, days_old, description=False):
+def merge_sts(conn, sts, days_old, description=False, group_concat=True):
     if len(sts)==0:
         return
     elif len(sts)==1:
@@ -52,10 +52,15 @@ def merge_sts(conn, sts, days_old, description=False):
 
     select_add = ""
     if description:
-        select_add = ", jobspy.description"
+        select_add = ", jobspy.description, jobspy.job_url"
+
+    if group_concat:
+        search_terms = "GROUP_CONCAT(r.search_term, '-') as search_term"
+    else:
+        search_terms = "r.search_term"
 
     query = f"""
-        SELECT jobspy.id, jobspy.date_posted, GROUP_CONCAT(r.search_term, '-') as search_term,
+        SELECT jobspy.id, jobspy.date_posted, {search_terms},
                 jobspy.country, jobspy.city{select_add}
         FROM jobspy
         LEFT JOIN (

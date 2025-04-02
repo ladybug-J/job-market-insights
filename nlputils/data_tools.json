@@ -58,7 +58,7 @@
   ],
   "cloud platforms": [
     ["amazon web services", "aws"],
-    ["google cloud platform", "gcp"],
+    ["google cloud platform", "google cloud", "gcp"],
     ["azure"],
     ["ibm cloud"],
     ["oracle cloud"]

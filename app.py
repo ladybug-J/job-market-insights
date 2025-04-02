@@ -215,8 +215,20 @@ if __name__ == "__main__":
                 var_plots.bar_ranking(conn, select_sts, days_old, stack=stack)
 
         with st.container():
-            st.subheader("Most demanded tools")
-            st.write("ChatGPT has been used to extract the main technologies mentioned in the job descriptions. ")
+            st.subheader("Top mentioned tools")
+            st.write("ChatGPT has been used to extract the main technologies mentioned in the job descriptions.")
+            st.radio(
+                "Select search term to sort by",
+                select_sts,
+                horizontal=True,
+                key="sort_st"
+            )
             top_5 = nlputils.count_tools(conn, select_countries, select_sts, days_old)
-            st.write(f"")
-            st.table(top_5)
+            st.markdown("It is noticeable how for **Data Engineers the tech stack required is overall larger**. Covering "
+                     "programming languages (Python, Java, Go), cloud technologies (AWS leading), and deployment "
+                     "software (equally valued Docker and Kubernetes). Main tools required by **Data Scientist** are of "
+                     "course Python and SQL. As a cloud technology, Azure slightly leads AWS, and Excel is also valued. "
+                     "Last but not least, **Data Analysts** also require SQL and Python, but the later is mentioned "
+                     "almost half times less often than for Data Scientists. In this case, Excel is mentioned almost with "
+                     "the same frequency as Python, and in addition, visualization software has more importance, leaded "
+                     "by Tableau.")

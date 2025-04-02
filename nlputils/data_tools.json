@@ -1,199 +1,146 @@
 {
-  "Data Science": [
-    "Jupyter Notebook",
-    "Pandas",
-    "NumPy",
-    "SciPy",
-    "Statsmodels",
-    "RapidMiner",
-    "DataRobot",
-    "Alteryx"
+  "data science": [
+    ["python"],
+    ["r"],
+    ["pandas"],
+    ["numpy"],
+    ["scipy"],
+    ["statsmodels"]
   ],
-  "Machine Learning": [
-    "Scikit-Learn",
-    "TensorFlow",
-    "PyTorch",
-    "XGBoost",
-    "LightGBM",
-    "H2O.ai",
-    "MLflow",
-    "Vertex AI",
-    "SageMaker"
+  "machine learning": [
+    ["scikit-learn", "sklearn"],
+    ["tensorflow", "tf"],
+    ["pytorch"],
+    ["xgboost"],
+    ["lightgbm", "lgbm"],
+    ["h2o.ai"],
+    ["mlflow"],
+    ["keras"]
   ],
-  "Artificial Intelligence": [
-    "OpenAI GPT",
-    "DeepMind AlphaFold",
-    "Hugging Face Transformers",
-    "FastAI",
-    "Keras",
-    "NVIDIA Triton",
-    "Caffe",
-    "DeepStream"
+  "artificial intelligence": [
+    ["gpt"],
+    ["alphafold"],
+    ["hugging face"],
+    ["llm"]
   ],
-  "Data Engineering": [
-    "Apache Spark",
-    "Apache Kafka",
-    "Apache Flink",
-    "dbt",
-    "Airflow",
-    "AWS Glue",
-    "Google Dataflow",
-    "Microsoft Azure Data Factory",
-    "Talend",
-    "Informatica"
+  "data engineering": [
+    ["spark", "pyspark"],
+    ["kafka"],
+    ["flink"],
+    ["dbt", "data build tool"],
+    ["aws glue"],
+    ["dataflow"],
+    ["azure data factory", "adf"]
   ],
-  "Data Analysis": [
-    "Excel",
-    "Google Sheets",
-    "Power BI",
-    "Tableau",
-    "Looker",
-    "Domo",
-    "Qlik Sense",
-    "Sisense"
+  "data analysis": [
+    ["excel", "microsoft excel"],
+    ["sheets"],
+    ["power bi"],
+    ["tableau"],
+    ["looker"],
+    ["qlik"]
   ],
-  "Data Visualization": [
-    "Matplotlib",
-    "Seaborn",
-    "Plotly",
-    "D3.js",
-    "ggplot2",
-    "Highcharts",
-    "ECharts",
-    "Google Data Studio"
+  "data visualization": [
+    ["matplotlib"],
+    ["seaborn"],
+    ["plotly"],
+    ["d3.js", "d3"],
+    ["ggplot2", "ggplot"],
+    ["google data studio"]
   ],
-  "Workflow Automation": [
-    "Apache Airflow",
-    "Prefect",
-    "Luigi",
-    "Dagster",
-    "Zapier",
-    "Microsoft Power Automate",
-    "UiPath",
-    "Automation Anywhere",
-    "Workato"
+  "workflow automation": [
+    ["airflow"],
+    ["prefect"],
+    ["luigi"],
+    ["dagster"],
+    ["zapier"],
+    ["power automate"]
   ],
-  "Cloud Platforms": [
-    "Amazon Web Services (AWS)",
-    "Google Cloud Platform (GCP)",
-    "Microsoft Azure",
-    "IBM Cloud",
-    "Oracle Cloud",
-    "Alibaba Cloud",
-    "Salesforce Cloud",
-    "SAP Cloud"
+  "cloud platforms": [
+    ["amazon web services", "aws"],
+    ["google cloud platform", "gcp"],
+    ["azure"],
+    ["ibm cloud"],
+    ["oracle cloud"]
   ],
-  "Big Data": [
-    "Hadoop",
-    "Hive",
-    "Presto",
-    "Dask",
-    "Snowflake",
-    "Google BigQuery",
-    "Amazon Redshift",
-    "ClickHouse",
-    "Databricks",
-    "Vertica"
+  "big data": [
+    ["hadoop"],
+    ["hive"],
+    ["presto", "prestodb"],
+    ["snowflake"],
+    ["bigquery"],
+    ["redshift"],
+    ["clickhouse"],
+    ["databricks"]
   ],
-  "DevOps & CI/CD": [
-    "Docker",
-    "Kubernetes",
-    "Terraform",
-    "Ansible",
-    "Jenkins",
-    "GitLab CI/CD",
-    "CircleCI",
-    "ArgoCD",
-    "Spinnaker",
-    "Helm"
+  "devops & ci/cd": [
+    ["docker"],
+    ["kubernetes", "k8s"],
+    ["terraform"],
+    ["ansible"],
+    ["jenkins"],
+    ["gitlab ci/cd"],
+    ["git"],
+    ["circleci"],
+    ["argocd"]
   ],
-  "Database Technologies": [
-    "PostgreSQL",
-    "MySQL",
-    "MongoDB",
-    "Cassandra",
-    "Redis",
-    "MariaDB",
-    "CockroachDB",
-    "Neo4j",
-    "Amazon DynamoDB",
-    "Google Firestore"
+  "database technologies": [
+    ["postgresql", "postgres"],
+    ["mysql"],
+    ["mongodb", "mongo"],
+    ["cassandra"],
+    ["redis"],
+    ["mariadb"],
+    ["cockroachdb"],
+    ["neo4j"],
+    ["dynamodb"],
+    ["firestore"]
   ],
-  "Programming Languages": [
-    "Python",
-    "R",
-    "SQL",
-    "Scala",
-    "Julia",
-    "Java",
-    "C++",
-    "C#",
-    "JavaScript",
-    "Go"
+  "programming languages": [
+    ["python"],
+    ["r"],
+    ["sql"],
+    ["scala"],
+    ["java"],
+    ["c++", "c ++"],
+    ["c#"],
+    ["javascript", "js"],
+    ["go", "golang"]
   ],
-  "Backend Development": [
-    "Django",
-    "Flask",
-    "Spring Boot",
-    "Express.js",
-    "Ruby on Rails",
-    "FastAPI",
-    "NestJS",
-    "ASP.NET Core"
+  "backend development": [
+    ["django"],
+    ["flask"],
+    ["spring"],
+    ["express.js", "express"],
+    ["ruby on rails"],
+    ["fastapi"],
+    ["nestjs"],
+    ["asp.net"]
   ],
-  "Frontend Development": [
-    "React",
-    "Vue.js",
-    "Angular",
-    "Svelte",
-    "Next.js",
-    "Nuxt.js",
-    "Tailwind CSS",
-    "Bootstrap"
+  "frontend development": [
+    ["react"],
+    ["vue.js", "vue"],
+    ["angular"],
+    ["svelte"],
+    ["next.js"],
+    ["tailwind css"],
+    ["bootstrap"]
   ],
-  "Cybersecurity": [
-    "Splunk",
-    "Wireshark",
-    "Nmap",
-    "Burp Suite",
-    "Metasploit",
-    "Palo Alto Networks",
-    "Tenable Nessus",
-    "Cloudflare",
-    "IBM QRadar"
+  "cybersecurity": [
+    ["splunk"],
+    ["wireshark"],
+    ["nmap"],
+    ["burp suite"],
+    ["metasploit"],
+    ["palo alto networks"],
+    ["cloudflare"]
   ],
-  "Project Management & Collaboration": [
-    "Jira",
-    "Trello",
-    "Asana",
-    "Monday.com",
-    "Slack",
-    "Microsoft Teams",
-    "Confluence",
-    "Miro",
-    "Notion"
-  ],
-  "Customer Relationship Management (CRM)": [
-    "Salesforce",
-    "HubSpot",
-    "Zoho CRM",
-    "Microsoft Dynamics",
-    "Pipedrive",
-    "Freshsales"
-  ],
-  "Enterprise Resource Planning (ERP)": [
-    "SAP ERP",
-    "Oracle ERP",
-    "Microsoft Dynamics 365",
-    "Workday",
-    "Netsuite"
-  ],
-  "E-commerce Platforms": [
-    "Shopify",
-    "Magento",
-    "WooCommerce",
-    "BigCommerce",
-    "OpenCart",
-    "PrestaShop"
+  "project management & collaboration": [
+    ["jira"],
+    ["trello"],
+    ["asana"],
+    ["slack"],
+    ["microsoft teams"],
+    ["confluence"]
   ]
 }

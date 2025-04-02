@@ -9,6 +9,7 @@ import etl
 from visualization import map_plots, var_plots
 from utils.random import generate_diff_metrics, ranking_table
 from dbtools import queries
+import nlputils
 
 st.set_page_config(
         page_title="Job market insights",
@@ -47,15 +48,27 @@ if __name__ == "__main__":
     cursor = conn.cursor()
 
     st.title(" Job market insights")
-    st.markdown("<div style='text-align: justify;'>"
-                "The goal of this dashboard is to get better insights of the job market trends in Europe. Given the "
-                "search terms and countries you are interested in, you can update the database, and after selecting "
-                "them in the metrics sidebar, generate automated visualizations and insights. The data is scraped from "
-                "Indeed and Glassdoor job portals using the open-source Python library JobSpy. The output is transformed "
-                "for removing duplicate job posts between pages, selecting meaninful data, and detecting and translating "
-                "the language of the description. Finally, the data is loaded into an sqlite database."
-                "</div>",
-                unsafe_allow_html=True
+    st.write("")
+
+    st.markdown("""
+                The goal of this dashboard is to get better insights of the job market trends in Europe. The main questions 
+                it is intended to answer are:
+                * **Which are the dominant data positions currently in the selected European countries?**
+                    * Job seekers can get a grasp on the most demanded positions in order to direct their learning towards 
+                    one or other field.
+                * **Even when the search term is written in English, how many descriptions are actually in the country's 
+                  language?**
+                    * The description language being in English does not remove the fact that the position might require 
+                    knowledge of the main language if the country. However, it can still give some insights on the job 
+                    possibilities in that country when the job seeker is not fluent in it.
+                * **How are jobs distributed within the countries?**
+                    * Having large concentrated job clusters in a country can imply higher living standards in the case 
+                    of high-paying jobs. As a consequence, one could expect higher rent costs, for example.
+                * **What are the main tools mentioned in the job descriptions?**
+                    * This information is important for job seekers that want to expand their skills in a direction 
+                    aligned with the current market. 
+                 
+                """
                 )
     st.write("")
 
@@ -96,7 +109,7 @@ if __name__ == "__main__":
                 placeholder="Insert integer",
                 value=24,
                 step=24,
-                min_value=24,
+                min_value=None,
                 help="If no value is inserted, the entire data available will be queried (with a maximum of 400 posts per "
                      "job board)"
             )
@@ -150,7 +163,7 @@ if __name__ == "__main__":
         st.write("")
         st.write("")
 
-        days_old = st.slider("Input the number of days from job posting", value=30)
+        days_old = st.slider("Input the number of days from job posting", value=20)
         st.markdown(f"## Trends the last {days_old} days")
 
         with st.container():
@@ -200,3 +213,10 @@ if __name__ == "__main__":
                         st.write(f"The top ten cities with the most jobs the last {days_old} days. The color of the bars "
                                  "represent the percentage of the jobs the city has with respect to the entire country.")
                     var_plots.bar_ranking(conn, select_sts, days_old, stack=stack)
+
+        with st.container():
+            st.subheader("Most demanded tools")
+            st.write("ChatGPT has been used to extract the main technologies mentioned in the job descriptions. ")
+            top_5 = nlputils.count_tools(conn, select_countries, select_sts, days_old)
+            st.write(f"")
+            st.table(top_5)

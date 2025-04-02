@@ -51,22 +51,22 @@ if __name__ == "__main__":
     st.write("")
 
     st.markdown("""
-                The goal of this dashboard is to get better insights of the job market trends in Europe. The main questions 
-                it is intended to answer are:
-                * **Which are the dominant data positions currently in the selected European countries?**
-                    * Job seekers can get a grasp on the most demanded positions in order to direct their learning towards 
-                    one or other field.
-                * **Even when the search term is written in English, how many descriptions are actually in the country's 
-                  language?**
-                    * The description language being in English does not remove the fact that the position might require 
-                    knowledge of the main language if the country. However, it can still give some insights on the job 
-                    possibilities in that country when the job seeker is not fluent in it.
-                * **How are jobs distributed within the countries?**
-                    * Having large concentrated job clusters in a country can imply higher living standards in the case 
-                    of high-paying jobs. As a consequence, one could expect higher rent costs, for example.
-                * **What are the main tools mentioned in the job descriptions?**
-                    * This information is important for job seekers that want to expand their skills in a direction 
-                    aligned with the current market. 
+                This dashboard provides insights into job market trends across selected European countries. It aims to 
+                answer key questions for job seekers and professionals looking to understand industry demands.
+                
+                * **Which data-related positions are most in demand?**
+                    * Job seekers can get a grasp on the most demanded positions in order to direct their learning toward 
+                    one or other field. The data-related jobs are the ones selected by default.
+                * **What proportion of job descriptions are in English versus the local language?**
+                    * Even if a search is conducted in English, many job postings may still require fluency in the local 
+                    language. This insight helps non-native speakers assess job accessibility in different countries. 
+                    However, it does not remove the fact that the position might require fluency in the local language.
+                * **How are jobs geographically distributed?**
+                    * Job clusters can indicate economic hubs, higher living standards, and potentially higher living 
+                    costs (e.g., rent)
+                * **Which tools and technologies are most mentioned in job descriptions?**
+                    * Understanding trending tools helps job seekers focus on the most relevant skills to improve their 
+                    employability. 
                  
                 """
                 )
@@ -200,19 +200,19 @@ if __name__ == "__main__":
                     "size and color of the points represents the number of jobs in each of the locations.")
                 map_plots.color_size_plot(conn, select_countries, select_sts, days_old)
             with col2:
-                st.subheader("Job distribution insights")
-                tc_tabs = st.tabs(["Top 10 cities", "Distribution"])
-                with tc_tabs[0]:
-                    stack = st.checkbox(
-                        "Stack per country",
-                        value=False,
-                        help="Stack the cities grouped by country and representing the percentage they correspond to "
-                             "the total jobs in the country."
-                    )
-                    if not stack:
-                        st.write(f"The top ten cities with the most jobs the last {days_old} days. The color of the bars "
-                                 "represent the percentage of the jobs the city has with respect to the entire country.")
-                    var_plots.bar_ranking(conn, select_sts, days_old, stack=stack)
+                st.subheader("Top 10 cities")
+                #tc_tabs = st.tabs(["Top 10 cities", "Distribution"])
+                #with tc_tabs[0]:
+                stack = st.checkbox(
+                    "Stack per country",
+                    value=False,
+                    help="Stack the cities grouped by country and representing the percentage they correspond to "
+                         "the total jobs in the country."
+                )
+                if not stack:
+                    st.write(f"The top ten cities with the most jobs the last {days_old} days. The color of the bars "
+                             "represent the percentage of the jobs the city has with respect to the entire country.")
+                var_plots.bar_ranking(conn, select_sts, days_old, stack=stack)
 
         with st.container():
             st.subheader("Most demanded tools")

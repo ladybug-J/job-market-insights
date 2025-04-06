@@ -55,7 +55,14 @@ def count_tools(conn, countries, sts, days_old):
     # Sort words by their overall frequency (highest first)
     sorted_words = word_freq.sort_values(ascending=False).index
 
-    # Reorder columns in nan_df based on sorted word order
+    # Select number of tools:
+    nr_tools = st.slider(
+        "Number of top-tools to visualize",
+        min_value=5,
+        max_value=nan_df.shape[1],
+        value=20
+    )
+    # Reorder columns in nan_df based on sorted word order and just the top-selected
     nan_df = nan_df[sorted_words]
 
     fig = go.Figure()
@@ -63,8 +70,8 @@ def count_tools(conn, countries, sts, days_old):
         freq_df = (nan_df.xs(search_term, level='search_term').count()/nan_df.xs(search_term, level='search_term').shape[0])
 
         fig.add_trace(go.Bar(
-            x=freq_df.iloc[:int(freq_df.shape[0]/2)].index,
-            y=freq_df.iloc[:int(freq_df.shape[0]/2)].values,
+            x=freq_df.iloc[:nr_tools].index,
+            y=freq_df.iloc[:nr_tools].values,
             name=search_term
         ))
 
@@ -79,6 +86,10 @@ def count_tools(conn, countries, sts, days_old):
         yaxis=dict(
             title='Normalized word frequency'
         )
+    )
+    fig.for_each_trace(
+        lambda trace: trace.update(visible='legendonly')
+        if st.session_state.sort_st not in trace.name else None
     )
     st.plotly_chart(
         fig

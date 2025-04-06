@@ -42,7 +42,7 @@ def color_size_plot(conn, countries, sts, days_old):
         lon=job_count['lon'],
         mode="markers",
         marker=dict(
-            size=8.0 * np.log(job_count['nr_jobs']),
+            size=8.0 * np.log(job_count['nr_jobs']+1),
             color=job_count['nr_jobs'],
             colorscale="viridis",  # Color scale applied
             colorbar=dict(title="Number of Jobs")

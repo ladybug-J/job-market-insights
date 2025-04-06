@@ -2,6 +2,7 @@ import sqlite3
 import subprocess
 import requests
 import urllib
+#import torch
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -10,6 +11,8 @@ from visualization import map_plots, var_plots
 from utils.random import generate_diff_metrics, ranking_table
 from dbtools import queries
 import nlputils
+
+#torch.classes.__path__ = []
 
 st.set_page_config(
         page_title="Job market insights",
@@ -49,37 +52,46 @@ if __name__ == "__main__":
 
     st.title(" Job market insights")
     st.write("")
+    st.write("This dashboard provides insights into job market trends across selected European countries. It aims to " 
+             "answer key questions for job seekers and professionals looking to understand industry demands."
+             )
 
-    st.markdown("""
-                This dashboard provides insights into job market trends across selected European countries. It aims to 
-                answer key questions for job seekers and professionals looking to understand industry demands.
-                
-                * **Which data-related positions are most in demand?**
-                    * Job seekers can get a grasp on the most demanded positions in order to direct their learning toward 
-                    one or other field. The data-related jobs are the ones selected by default.
-                * **What proportion of job descriptions are in English versus the local language?**
-                    * Even if a search is conducted in English, many job postings may still require fluency in the local 
-                    language. This insight helps non-native speakers assess job accessibility in different countries. 
-                    However, it does not remove the fact that the position might require fluency in the local language.
-                * **How are jobs geographically distributed?**
-                    * Job clusters can indicate economic hubs, higher living standards, and potentially higher living 
-                    costs (e.g., rent)
-                * **Which tools and technologies are most mentioned in job descriptions?**
-                    * Understanding trending tools helps job seekers focus on the most relevant skills to improve their 
-                    employability. 
-                 
-                """
-                )
+    with st.expander("Key-questions"):
+        st.markdown("""
+                    * **Which data-related positions are most in demand?**
+                        * Job seekers can get a grasp on the most demanded positions in order to direct their learning toward 
+                        one or other field. The data-related jobs are the ones selected by default.
+                    * **What proportion of job descriptions are in English versus the local language?**
+                        * Even if a search is conducted in English, many job postings may still require fluency in the local 
+                        language. This insight helps non-native speakers assess job accessibility in different countries. 
+                        However, it does not remove the fact that the position might require fluency in the local language.
+                    * **How are jobs geographically distributed?**
+                        * Job clusters can indicate economic hubs, higher living standards, and potentially higher living 
+                        costs (e.g., rent)
+                    * **Which tools and technologies are most mentioned in job descriptions?**
+                        * Understanding trending tools helps job seekers focus on the most relevant skills to improve their 
+                        employability. 
+                     
+                    """
+                    )
+    with st.expander("Basic usage and defaults"):
+        st.markdown("Use the sidebar to scrape data from Indeed and Glassdoor, given a search term and the countries for the "
+             "search. The database is already pre-filled with data positions (Data Analyst/Scientist/Engineer) for "
+             "five european countries (Germany, Spain, Switzerland, Austria, and France). The selection of the terms and "
+             "countries to build the visualizations can be done using the sidebar's metrics settings.")
+    #with st.expander("Summary Analysis"):
+    #    st.markdown("""
+    #
+    #    """)
+
     st.write("")
 
     st.markdown("⚠️ App still under construction!")
 
     with st.sidebar:
 
-        st.header("Query data", divider="green", help="The selected search term will be used to scrape indeed and "
-                                                      "glassdoor for a maximum of 400 job postings each. Duplicates "
-                                                      "between job boards will be removed, and the descriptions will "
-                                                      "be translated to English.")
+        st.header("Scrape data", divider="green", help="The selected search term will be used to scrape indeed and "
+                                                      "glassdoor for a maximum of 400 job postings each.")
         with st.expander("Options"):
             search_term = st.text_input(
                 "Search job term",
@@ -119,7 +131,7 @@ if __name__ == "__main__":
                 key="run_etl",
                 on_click=run_etl,
                 args=(conn, search_term, countries, hours_old),
-                disabled=len(countries)==0
+                disabled=len(countries) == 0
 
             )
 
@@ -152,7 +164,7 @@ if __name__ == "__main__":
 
     if DB_ON:
         with st.container():
-            st.subheader("Number of job postings the last 7 days - Difference with previous 7 days")
+            st.subheader("Number of job postings the last 7 days versus previous")
             st.write("This metrics correspond to the sum of all job postings from the selected search terms per country the"
                      "last 7 days.")
             if select_countries or select_sts:
@@ -163,12 +175,17 @@ if __name__ == "__main__":
         st.write("")
         st.write("")
 
-        days_old = st.slider("Input the number of days from job posting", value=20)
+        days_old = st.slider(
+            "Input the number of days from job posting",
+            min_value=1,
+            max_value=60,
+            value=20
+        )
         st.markdown(f"## Trends the last {days_old} days")
 
         with st.container():
-            st.subheader("Search term popularity - time-series from DB")
-            st.write("The following time-series show the amount of jobs in the database for the selected time-period and "
+            st.subheader("Search term popularity - time series from DB")
+            st.write("The following time series show the amount of jobs in the database for the selected time-period and "
                      "search term. The combined labels (e.g. data scientis-AI engineer) correspond to jobs that are "
                      "found with both search terms. The colored areas give a better visualization of the dominant search "
                      "term.")
@@ -216,19 +233,17 @@ if __name__ == "__main__":
 
         with st.container():
             st.subheader("Top mentioned tools")
-            st.write("ChatGPT has been used to extract the main technologies mentioned in the job descriptions.")
+            st.write("ChatGPT has been used to extract the main technologies mentioned in the job descriptions and saved "
+                     "into a JSON file. This file is then used as vocabulary for the CountVectorizer from scikit-learn. "
+                     "The barplots show the frequency with which different technologies are mentioned in job posts, "
+                     "normalized by the amount of job posts per searh term. The plot can be sorted for identifying the "
+                     "trending tools for each search term. Grouped bars are possible to visualize clickling on the plotly "
+                     "chart legend traces.")
             st.radio(
                 "Select search term to sort by",
                 select_sts,
                 horizontal=True,
                 key="sort_st"
             )
+
             top_5 = nlputils.count_tools(conn, select_countries, select_sts, days_old)
-            st.markdown("It is noticeable how for **Data Engineers the tech stack required is overall larger**. Covering "
-                     "programming languages (Python, Java, Go), cloud technologies (AWS leading), and deployment "
-                     "software (equally valued Docker and Kubernetes). Main tools required by **Data Scientist** are of "
-                     "course Python and SQL. As a cloud technology, Azure slightly leads AWS, and Excel is also valued. "
-                     "Last but not least, **Data Analysts** also require SQL and Python, but the later is mentioned "
-                     "almost half times less often than for Data Scientists. In this case, Excel is mentioned almost with "
-                     "the same frequency as Python, and in addition, visualization software has more importance, leaded "
-                     "by Tableau.")

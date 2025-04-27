@@ -119,7 +119,7 @@ if __name__ == "__main__":
             hours_old = st.number_input(
                 label="How many hours old should the job postings be when querying and saving?",
                 placeholder="Insert integer",
-                value=24,
+                value=None,
                 step=24,
                 min_value=None,
                 help="If no value is inserted, the entire data available will be queried (with a maximum of 400 posts per "

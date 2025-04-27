@@ -90,3 +90,25 @@ def count_languages(conn, countries, search_term, days_old):
     """
 
     return pd.read_sql(query, conn)
+
+def delete_last_30(conn):
+    # As there is a foreign key constrain, first the IDs should be saved and deleted from searchterms, and then
+    # removed from jobspy
+    query = """
+        SELECT id FROM jobspy WHERE date_posted <= date('now', '-31 days')
+    """
+    cursor = conn.cursor()
+    ids = cursor.execute(query).fetchall()
+    flat_ids = [i[0] for i in ids]
+
+    # Remove from both tables, first from the one with the foreign key constrain
+    cursor.execute(f"""
+        DELETE FROM searchterms
+        WHERE id in {tuple(flat_ids)}
+    """)
+    cursor.execute(f"""
+        DELETE FROM jobspy
+        WHERE id in {tuple(flat_ids)}
+    """)
+
+    conn.commit()

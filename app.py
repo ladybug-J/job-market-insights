@@ -43,11 +43,12 @@ def connect2db(db_name):
 
 if __name__ == "__main__":
 
+    import os
     import pandas as pd
 
     DEBUG = True
-    db_name = "jobs.db"
-    conn = connect2db(db_name)
+    DB_PATH = os.path.join(os.path.dirname(__file__), "jobs.db")
+    conn = connect2db(DB_PATH)
     cursor = conn.cursor()
 
     st.title(" Job market insights")

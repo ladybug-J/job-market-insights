@@ -1,6 +1,6 @@
 ## Job Market Insights Dashboard  
 
-⚠️ App still under construction!
+⚠️ Currently database update not working!
 
 ### Link to app
 https://job-market-insights.streamlit.app

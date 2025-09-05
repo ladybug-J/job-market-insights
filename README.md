@@ -1,6 +1,3 @@
-## Job Market Insights Dashboard  
-
-⚠️ Currently automated database update not working!
 ![alt text](./figs/large_jobdash.png "Preview")
 
 ### Link to app

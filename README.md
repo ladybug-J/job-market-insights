@@ -1,6 +1,7 @@
 ## Job Market Insights Dashboard  
 
-⚠️ Currently database update not working!
+⚠️ Currently automated database update not working!
+![alt text](./figs/large_jobdash.png "Preview")
 
 ### Link to app
 https://job-market-insights.streamlit.app

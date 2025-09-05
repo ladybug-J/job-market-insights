@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /Users/judity/Desktop/gitlab/job-market-analysis
+cd /Users/judity/Desktop/gitlab/job-market-insights/
 
 # Run .py script
 source job-env/bin/activate

@@ -86,14 +86,14 @@ def transform(jobs_chunk, search_term, country):
         try:
             return translator.translate(text, dest='en').text
         except:
-            return None
+            return text
 
     jobs_chunk.loc[non_en_idx, 'description'] = jobs_chunk.loc[non_en_idx, 'description'].apply(translate_safe)
     jobs_chunk.dropna(subset=['description'], inplace=True)
 
-    # Convert descriptions to lowercase
+    # Convert descriptions and search term to lowercase
     jobs_chunk['description'] = jobs_chunk['description'].str.lower()
-    jobs_chunk['search_term'] = search_term
+    jobs_chunk['search_term'] = search_term.str.lower()
 
     print(f"Transformation complete for {jobs_chunk.shape[0]} jobs in chunk for '{search_term}' in {country}.")
     return jobs_chunk

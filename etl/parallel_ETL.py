@@ -93,7 +93,7 @@ def transform(jobs_chunk, search_term, country):
 
     # Convert descriptions and search term to lowercase
     jobs_chunk['description'] = jobs_chunk['description'].str.lower()
-    jobs_chunk['search_term'] = search_term.str.lower()
+    jobs_chunk['search_term'] = search_term.lower()
 
     print(f"Transformation complete for {jobs_chunk.shape[0]} jobs in chunk for '{search_term}' in {country}.")
     return jobs_chunk

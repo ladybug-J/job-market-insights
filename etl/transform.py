@@ -68,8 +68,23 @@ def translate2en_description(jobs_df):
 
     return jobs_df
 
-def add_columns():
+def add_lower_columns(jobs_df, search_term):
     """
+    Add search term in lowercase as column and convert to description to lowercase
+    """
+    jobs_df['description'] = jobs_df['description'].str.lower()
+    jobs_df['search_term'] = search_term.lower()
+    return jobs_df
 
+def run(jobs_df, country, search_term):
     """
-    pass
+    Run sequence of transformations
+    """
+    return (
+        jobs_df
+        .pipe(lambda df: city_country(df, country))
+        .pipe(remove_formatting)
+        .pipe(detect_language)
+        .pipe(translate2en_description)
+        .pipe(lambda df: add_lower_columns(df, search_term))
+    )

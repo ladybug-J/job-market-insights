@@ -166,7 +166,7 @@ if __name__ == "__main__":
     if DB_ON:
         with st.container():
             st.subheader("Number of job postings the last 7 days versus previous")
-            st.write("This metrics correspond to the sum of all job postings from the selected search terms per country the"
+            st.write("This metric corresponds to the sum of all job postings from the selected search terms per country the"
                      "last 7 days.")
             if select_countries or select_sts:
                 generate_diff_metrics(cursor, select_countries, select_sts)

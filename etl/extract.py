@@ -50,7 +50,7 @@ def drop_duplicates(jobs_df):
     return jobs_df.drop(remove_idx).drop(columns=['site'])
 
 
-def run(search_term, country, hours_old):
+def run(country, search_term, hours_old):
     """
     Scrapes job postings with Jobspy library, removes duplicates between different job boards, and returns a
     pandas DataFrame

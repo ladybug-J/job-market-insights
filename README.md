@@ -1,4 +1,4 @@
-![alt text](./figs/large_jobdash.png "Preview")
+![alt text](preview-dash.png "Preview")
 
 ### Link to app
 https://job-market-insights.streamlit.app

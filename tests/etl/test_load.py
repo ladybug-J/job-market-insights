@@ -4,7 +4,6 @@ import etl
 
 DB_PATH = "../jobs_test.db"
 
-
 def test_connect():
     """ Check if connection responds something. """
     conn = etl.load.connect_db(DB_PATH)

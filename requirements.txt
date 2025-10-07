@@ -1,5 +1,5 @@
 googletrans_py==4.0.0
-jobspy==0.31.0
+python-jobspy==1.1.76
 langdetect==1.0.9
 matplotlib==3.10.6
 numpy==2.3.3

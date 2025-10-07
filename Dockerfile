@@ -3,7 +3,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY ./streamlit-app app/streamlit-app
+COPY ./etl app/etl
 EXPOSE 8501
 ENTRYPOINT ["streamlit", "run"]
-CMD ["app.py"]
+CMD ["streamlit-app/app.py"]

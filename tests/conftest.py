@@ -1,4 +1,5 @@
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+print(f"Path for importing modules to tests: {str(Path(__file__).resolve().parent.parent)}")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))

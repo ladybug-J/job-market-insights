@@ -21,6 +21,11 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt && pip install pytest
 
+      - name: Check Python & packages
+        run: |
+          which python
+          python -m pip list
+
       - name: Run tests
         run: pytest --junitxml=test-results/results.xml
 

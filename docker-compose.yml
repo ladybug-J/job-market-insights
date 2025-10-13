@@ -1,0 +1,9 @@
+services:
+  streamlit:
+    image: streamlit-dash
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./:/app/
+    command: ["./streamlit-app/app.py", "--server.port=8501", "--server.address=0.0.0.0"]

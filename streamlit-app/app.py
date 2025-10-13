@@ -1,18 +1,15 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import sqlite3
-import subprocess
-import requests
-import urllib
-#import torch
 import streamlit as st
-import streamlit.components.v1 as components
 
 import etl
 from visualization import map_plots, var_plots
-from utils.random import generate_diff_metrics, ranking_table
-from dbtools import queries
+from utils.random import generate_diff_metrics
 import nlputils
-
-#torch.classes.__path__ = []
 
 st.set_page_config(
         page_title="Job market insights",
@@ -26,15 +23,11 @@ EU_countries = ["Austria", "Belgium", "Czech Republic", "Denmark", "Finland", "F
                 "Romania", "Spain", "Sweeden", "Switzerland", "Turkey", "Ukraine"
                 ]
 
-def run_etl(conn, search_term, countries, hours_old):
-    # Sequential:
-    #for country in countries:
-        #subprocess.run(["python3", "./etl/main.py", "--search_term", search_term, "--country", country])
-        #etl.main(conn, search_term, country, hours_old)
-        #etl.update_europe_table(conn)
-    # Parallel:
-    etl.run_parallel_etl([search_term], countries, hours_old)
-    #etl.update_europe_table(conn)
+def run_etl(countries, search_terms, hours_old, db_path):
+
+    etl.pipeline.parallel_pipeline(countries, search_terms, hours_old, db_path)
+    etl.update_europe_table(db_path)
+
 
 @st.cache_resource
 def connect2db(db_name):
@@ -47,7 +40,7 @@ if __name__ == "__main__":
     import pandas as pd
 
     DEBUG = True
-    DB_PATH = os.path.join(os.path.dirname(__file__), "jobs.db")
+    DB_PATH = os.path.join(os.path.dirname(__file__), "../jobs.db")
     conn = connect2db(DB_PATH)
     cursor = conn.cursor()
 
@@ -76,14 +69,11 @@ if __name__ == "__main__":
                     """
                     )
     with st.expander("Basic usage and defaults"):
-        st.markdown("Use the sidebar to scrape data from Indeed and Glassdoor, given a search term and the countries for the "
-             "search. The database is already pre-filled with data positions (Data Analyst/Scientist/Engineer) for "
-             "five european countries (Germany, Spain, Switzerland, Austria, and France). The selection of the terms and "
-             "countries to build the visualizations can be done using the sidebar's metrics settings.")
-    #with st.expander("Summary Analysis"):
-    #    st.markdown("""
-    #
-    #    """)
+        st.markdown(
+            "Use the sidebar to scrape data from Indeed and Glassdoor, given the search terms and the countries."
+            "The selection of the terms and countries to build the visualizations can be done using the sidebar's "
+            "metrics settings."
+        )
 
     st.write("")
 
@@ -91,13 +81,18 @@ if __name__ == "__main__":
 
     with st.sidebar:
 
-        st.header("Scrape data", divider="green", help="The selected search term will be used to scrape indeed and "
-                                                      "glassdoor for a maximum of 400 job postings each.")
+        st.header(
+            "Scrape data",
+            divider="green",
+            help="The selected search term will be used to scrape indeed and glassdoor for a maximum of 400 job "
+                 "postings each."
+        )
         with st.expander("Options"):
-            search_term = st.text_input(
-                "Search job term",
-                value="Data Scientist"
-            )
+            search_terms = st.text_input(
+                "Input search terms separated by a comma",
+                value="Data Scientist, Data Analyst"
+            ).split(",")
+
             countries = st.multiselect(
                 "Select countries for looking for the search term",
                 options=EU_countries,
@@ -108,13 +103,13 @@ if __name__ == "__main__":
             try:
                 query = f"""
                     SELECT country AS Country, MAX(date_posted) AS 'Last date' FROM jobspy WHERE id IN (
-                        SELECT id FROM searchterms WHERE search_term='{search_term}'
+                        SELECT id FROM searchterms
                         ) GROUP BY country
                 """
                 st.table(pd.read_sql(query, conn).set_index('Country'))
                 DB_ON = True
             except:
-                st.write("No data into the database")
+                st.write("No data in the database")
                 DB_ON = False
 
             hours_old = st.number_input(
@@ -131,7 +126,7 @@ if __name__ == "__main__":
                 "Update database",
                 key="run_etl",
                 on_click=run_etl,
-                args=(conn, search_term, countries, hours_old),
+                args=(countries, search_terms, hours_old, DB_PATH),
                 disabled=len(countries) == 0
 
             )
@@ -157,7 +152,7 @@ if __name__ == "__main__":
         select_sts = st.multiselect(
             "Select search terms",
             options=unique_st,
-            default=["Data Scientist", "Data Analyst", "Data Engineer"],
+            default=unique_st,
             help="This select box shows the search terms that are already in the database. If you are looking for another "
                  "search term's data, please update database.",
             key="select_sts"

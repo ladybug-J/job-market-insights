@@ -1,6 +1,5 @@
 import os
 import json
-import spacy
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -9,13 +8,6 @@ import streamlit as st
 from sklearn.feature_extraction.text import CountVectorizer
 
 from dbtools import queries
-
-
-def lemmatize_description(text):
-    nlp = spacy.load("en_core_web_sm")
-    doc = nlp(text)
-    words = [token.lemma_ for token in doc if token.is_alpha and not token.is_stop]  # Lemmatization & stopword removal
-    return words
 
 def count_tools(conn, countries, sts, days_old):
 

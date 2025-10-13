@@ -1,4 +1,6 @@
+import time
 import logging
+import requests
 
 import pandas as pd
 
@@ -6,7 +8,7 @@ import jobspy
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s: %(message)s',
-    level=logging.INFO
+    level=logging.ERROR
 )
 logger = logging.getLogger(__name__)
 
@@ -14,24 +16,34 @@ COLUMNS = ['id', 'title', 'company', 'location', 'date_posted', 'job_url', 'desc
 MAX_RESULTS = 400
 SITES = ["indeed", "glassdoor"]
 
+
 def call_jobspy(search_term, country, hours_old, max_results=MAX_RESULTS, sites=SITES):
     """
     Scrape data using JobSpy - expected pandas DataFrame with at least the columns ['id', 'company', 'title']
     """
-    jobs_df = pd.DataFrame(jobspy.scrape_jobs(
-        site_name=sites,
-        search_term=search_term,
-        location=country,
-        results_wanted=max_results,
-        hours_old=hours_old,
-        country_indeed=country
-    ))
-    if jobs_df.empty:
-        logger.info(f"No jobs found for '{search_term}' in {country}.")
+    RETRIES = 5
 
-    logger.debug(f"Dataframe head: {jobs_df.head(20)}")
+    for attempt in range(1, RETRIES + 1):
+        try:
+            jobs_df = pd.DataFrame(jobspy.scrape_jobs(
+                site_name=sites,
+                search_term=search_term,
+                location=country,
+                results_wanted=max_results,
+                hours_old=hours_old,
+                country_indeed=country
+            ))
+            if jobs_df.empty:
+                logger.info(f"No jobs found for '{search_term}' in {country}.")
 
-    return jobs_df
+            logger.debug(f"Dataframe head: {jobs_df.head(20)}")
+            return jobs_df
+
+        except requests.exceptions.ReadTimeout:
+            if attempt < RETRIES:
+                time.sleep(5)
+            else:
+                return pd.DataFrame()
 
 
 def drop_duplicates(jobs_df):

@@ -7,7 +7,7 @@ from googletrans import Translator
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s: %(message)s',
-    level=logging.INFO
+    level=logging.ERROR
 )
 logger = logging.getLogger(__name__)
 

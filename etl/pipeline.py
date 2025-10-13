@@ -33,6 +33,8 @@ def parallel_pipeline(countries, search_terms, hours_old, dbpath):
         for f in futures:
             f.result()
 
+    return True
+
 
 if __name__ == '__main__':
 

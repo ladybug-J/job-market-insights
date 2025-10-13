@@ -7,16 +7,17 @@ import pandas as pd
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s: %(message)s',
-    level=logging.INFO
+    level=logging.ERROR
 )
 logger = logging.getLogger(__name__)
 
-def update_europe_table(conn):
+def update_europe_table(db_path):
     """
     Add geojson to SQLite database, for being able to query coordinates of cities for plotting onto the map.
 
     If the city + country does not exist in the geojson file, it checks for alternative naming of the city.
     """
+    conn = sqlite3.connect(db_path)
     filepath = os.path.dirname(__file__)
 
     with open(f"{filepath}/europe.geojson", 'rb') as f:
@@ -31,7 +32,7 @@ def update_europe_table(conn):
     prop_df = pd.DataFrame(
         [x['properties'] for x in geojson['features']],
         columns=['name', 'ascii_name', 'cou_name_en', 'country_code', 'feature_code',
-                 'alternate_names', 'timezone', 'lat', 'lon', 'population'
+                 'alternate_names', 'timezone', 'population'
                  ]
     )
     # Merge
@@ -71,5 +72,5 @@ def update_europe_table(conn):
 
 
 if __name__ == '__main__':
-    conn = sqlite3.connect("../tests/test_jobs.db")
-    update_europe_table(conn)
+    db_path = "../tests/test_jobs.db"
+    update_europe_table(db_path)

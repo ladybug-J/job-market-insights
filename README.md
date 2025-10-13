@@ -4,14 +4,23 @@
 https://job-market-insights.streamlit.app
 
 ### Overview  
-The goal of this project is to build a dashboard that provides deeper insights into the European job market. By default, Indeed and Glassdoor are scraped using the following search terms: _'Data Scientist'_, _'Data Analyst'_, _'Data Engineer'_, in the following countries: _'Austria'_, _'France'_, _'Germany'_, _'Spain'_, _'Switzerland'_.
+The goal of this project is to build a dashboard that provides deeper insights into the European job market. By default, 
+Indeed and Glassdoor are scraped using the following search terms: _'Data Scientist'_, _'Data Analyst'_,
+in the following countries: _'Austria'_, _'France'_, _'Germany'_, _'Spain'_, _'Switzerland'_.
+
+### Running the app locally with Docker
+With the docker deamon running, one can start the dashboard service by running the following command in the root of the 
+repository:
+```
+docker-compose up
+```
 
 ### Workflow  
 1. **Data Collection**:  
    - Scrape job listings using the open-source library **JobSpy**.  
    - Clean the data by removing duplicate ads, removing markdown formatting, and translating job descriptions into 
      English for posterior analysis.
-   - Store the processed data in a **SQLite database**.  
+   - Store the processed data in a **SQLite database**. SQLite is used for keeping the demo simple. 
 
 2. **Data Analysis & Visualization**:
    - **Time-series of job postings per search term and country** - compare which search term gives better results and visualize trends.
@@ -30,5 +39,4 @@ The goal of this project is to build a dashboard that provides deeper insights i
 4. **Alternative to LLMs:**
 
    LLMs require a large processing power that cannot be hosted in the Streamlit cloud. Therefore, a simpler alternative to get some insights of the main tools on demand, a JSON file containing {"tech domain": list(tools)} generated using ChatGPT will be used to count the amount of times a tool is mentioned in the job descriptions.
-
 

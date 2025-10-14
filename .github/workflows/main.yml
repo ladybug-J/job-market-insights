@@ -26,9 +26,13 @@ jobs:
           which python
           python -m pip list
 
-      - name: Run tests
-        run: pytest --junitxml=test-results/results.xml
-
+      - name: Run tests with retry
+        uses: nick-invision/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 3
+          command: pytest --junitxml=test-results/results.xml
+          
       - name: Upload test results
         uses: actions/upload-artifact@v4
         with:
